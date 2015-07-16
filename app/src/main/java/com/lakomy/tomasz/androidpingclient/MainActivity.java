@@ -21,7 +21,8 @@ public class MainActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -31,12 +32,17 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                // Open settings
+                return true;
+            case R.id.action_search:
+                // Open search
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
-        return super.onOptionsItemSelected(item);
     }
 
     /** Called when the user clicks the Send button **/
