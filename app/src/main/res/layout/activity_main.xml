@@ -25,4 +25,10 @@
         android:text="@string/button_check_signal_strength"
         android:onClick="checkSignalStrength"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_map"
+        android:onClick="goToMap"/>
+
 </LinearLayout>
