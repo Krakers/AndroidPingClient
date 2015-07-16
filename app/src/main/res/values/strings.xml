@@ -9,4 +9,5 @@
     <string name="action_search">Search</string>
     <string name="title_activity_display_message">My Message</string>
     <string name="title_activity_check_signal_strength">CheckSignalStrength</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
