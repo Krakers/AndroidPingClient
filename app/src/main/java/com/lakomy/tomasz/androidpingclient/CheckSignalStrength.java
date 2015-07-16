@@ -3,7 +3,10 @@ package com.lakomy.tomasz.androidpingclient;
 import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfo;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellSignalStrengthGsm;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
@@ -27,15 +30,13 @@ public class CheckSignalStrength extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         class myPhoneStateListener extends PhoneStateListener {
             public int SignalStrength = 0;
-            public int counter = 0;
 
             @Override
             public void onSignalStrengthsChanged(SignalStrength signalStrength) {
                 super.onSignalStrengthsChanged(signalStrength);
-                counter++;
                 SignalStrength = signalStrength.getGsmSignalStrength();
                 TextView strength = (TextView) findViewById(R.id.signal_strength);
-                strength.setText(SignalStrength + "dBm " + counter);
+                strength.setText(SignalStrength + "dBm ");
             }
 
             @Override
@@ -50,22 +51,22 @@ public class CheckSignalStrength extends ActionBarActivity {
                 TextView networkInfo = (TextView) findViewById(R.id.network_info);
                 switch (direction) {
                     case TelephonyManager.DATA_ACTIVITY_NONE:
-                        networkInfo.setText("onDataActivity: DATA_ACTIVITY_NONE");
+                        networkInfo.setText(" onDataActivity: DATA_ACTIVITY_NONE");
                         break;
                     case TelephonyManager.DATA_ACTIVITY_IN:
-                        networkInfo.setText("onDataActivity: DATA_ACTIVITY_IN");
+                        networkInfo.setText(" onDataActivity: DATA_ACTIVITY_IN");
                         break;
                     case TelephonyManager.DATA_ACTIVITY_OUT:
-                        networkInfo.setText("onDataActivity: DATA_ACTIVITY_OUT");
+                        networkInfo.setText(" onDataActivity: DATA_ACTIVITY_OUT");
                         break;
                     case TelephonyManager.DATA_ACTIVITY_INOUT:
-                        networkInfo.setText("onDataActivity: DATA_ACTIVITY_INOUT");
+                        networkInfo.setText(" onDataActivity: DATA_ACTIVITY_INOUT");
                         break;
                     case TelephonyManager.DATA_ACTIVITY_DORMANT:
-                        networkInfo.setText("onDataActivity: DATA_ACTIVITY_DORMANT");
+                        networkInfo.setText(" onDataActivity: DATA_ACTIVITY_DORMANT");
                         break;
                     default:
-                        networkInfo.setText("onDataActivity: DATA_ACTIVITY_NONE");
+                        networkInfo.setText(" onDataActivity: DATA_ACTIVITY_NONE");
                         break;
                 }
             }
