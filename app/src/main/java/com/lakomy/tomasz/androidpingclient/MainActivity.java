@@ -53,4 +53,10 @@ public class MainActivity extends ActionBarActivity {
         intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
+
+    /** Called when user clicks the Check Signal Strength button **/
+    public void checkSignalStrength(View view) {
+        Intent intent = new Intent(this, CheckSignalStrength.class);
+        startActivity(intent);
+    }
 }
