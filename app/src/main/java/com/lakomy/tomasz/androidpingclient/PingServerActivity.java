@@ -1,9 +1,11 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 
@@ -42,5 +44,10 @@ public class PingServerActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void pingServer(View view) {
+        TextView info = (TextView) findViewById(R.id.ping_info);
+        info.setText("Button pressed");
     }
 }
