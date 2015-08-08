@@ -15,8 +15,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 public class PingServerActivity extends ActionBarActivity {
+
+
+    int numberOfRequests;
+    int sumOfRequestTimes;
+    int averageRequestTime;
+    static public long timeBeforeRequest = System.currentTimeMillis();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +37,9 @@ public class PingServerActivity extends ActionBarActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        numberOfRequests = 0;
+        sumOfRequestTimes = 0;
+        averageRequestTime = 0;
     }
 
     @Override
@@ -51,27 +64,39 @@ public class PingServerActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void pingServer(View view) {
+    public void pingServer(final View view) {
         // Instantiate the RequestQueue.
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://192.168.54.5:8080";
+        final RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://2102cb16.ngrok.io";
+        Timer timer = new Timer();
 
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        mTextView.setText(mTextView.getText() + "\nResponse is: " + response);
-                    }
-                }, new Response.ErrorListener() {
+        final Response.Listener successHandler = new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                long deltaTime = System.currentTimeMillis() - timeBeforeRequest;
+                sumOfRequestTimes += deltaTime;
+                numberOfRequests++;
+                averageRequestTime = sumOfRequestTimes / numberOfRequests;
+                mTextView.setText("Request time is: " + deltaTime + " number of requests: " + numberOfRequests
+                        + " average request time: " + averageRequestTime);
+            }
+        };
+
+        final Response.ErrorListener errorHandler = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 mTextView.setText("That didn't work!" + error.toString());
             }
-        });
+        };
+        // Request a string response from the provided URL.
+        final StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                successHandler, errorHandler);
+
+        RequestTask task = new RequestTask(stringRequest, queue);
+
         // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+        timer.scheduleAtFixedRate(task, new Date(), 1000);
     }
 }
