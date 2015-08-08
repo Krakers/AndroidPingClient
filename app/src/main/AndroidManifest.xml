@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DisplayMessageActivity"
+            android:name=".PingServerActivity"
             android:label="@string/title_activity_display_message"
             android:parentActivityName=".MainActivity" >
             <meta-data

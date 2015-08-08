@@ -4,9 +4,17 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.lakomy.tomasz.androidpingclient.DisplayMessageActivity">
+    tools:context="com.lakomy.tomasz.androidpingclient.PingServerActivity">
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/ping_info"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_ping"
+        android:onClick="pingServer"/>
 
 </RelativeLayout>
