@@ -8,6 +8,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 
 public class PingServerActivity extends ActionBarActivity {
 
@@ -20,8 +27,6 @@ public class PingServerActivity extends ActionBarActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        TextView pingInfo = (TextView) findViewById(R.id.ping_info);
-        pingInfo.setText("PING");
     }
 
     @Override
@@ -47,7 +52,26 @@ public class PingServerActivity extends ActionBarActivity {
     }
 
     public void pingServer(View view) {
-        TextView info = (TextView) findViewById(R.id.ping_info);
-        info.setText("Button pressed");
+        // Instantiate the RequestQueue.
+        final TextView mTextView = (TextView) findViewById(R.id.ping_info);
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://192.168.54.5:8080";
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        mTextView.setText(mTextView.getText() + "\nResponse is: " + response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                mTextView.setText("That didn't work!" + error.toString());
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 }
