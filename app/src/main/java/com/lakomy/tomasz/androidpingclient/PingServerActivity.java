@@ -1,6 +1,7 @@
 package com.lakomy.tomasz.androidpingclient;
 
 import android.content.Intent;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -26,6 +27,7 @@ public class PingServerActivity extends ActionBarActivity {
     int numberOfRequests;
     int sumOfRequestTimes;
     int averageRequestTime;
+    Timer timer;
     static public long timeBeforeRequest = System.currentTimeMillis();
 
     @Override
@@ -40,6 +42,22 @@ public class PingServerActivity extends ActionBarActivity {
         numberOfRequests = 0;
         sumOfRequestTimes = 0;
         averageRequestTime = 0;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        TextView mTextView = (TextView) findViewById(R.id.ping_info);
+        super.onResume();
+        mTextView.setText("Android Ping!");
     }
 
     @Override
@@ -64,12 +82,17 @@ public class PingServerActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void changeNetworkSettings(final View view) {
+        final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+        startActivity(intent);
+    }
+
     public void pingServer(final View view) {
         // Instantiate the RequestQueue.
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
         final RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://2102cb16.ngrok.io";
-        Timer timer = new Timer();
+        String url = "http://1615d897.ngrok.io";
+        timer = new Timer();
 
         final Response.Listener successHandler = new Response.Listener<String>() {
 
