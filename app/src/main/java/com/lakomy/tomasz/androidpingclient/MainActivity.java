@@ -54,10 +54,4 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, CheckSignalStrength.class);
         startActivity(intent);
     }
-
-    /** Called when user clicks the Map button **/
-    public void goToMap(View view) {
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
-    }
 }
