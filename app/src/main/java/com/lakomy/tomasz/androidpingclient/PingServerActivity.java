@@ -1,11 +1,16 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +30,9 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -46,6 +54,7 @@ public class PingServerActivity extends AppCompatActivity
     int numberOfRequests;
     int sumOfRequestTimes;
     int averageRequestTime;
+    long lastKnownDeltaTime;
     Timer timer;
     static public long timeBeforeRequest = System.currentTimeMillis();
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
@@ -69,6 +78,7 @@ public class PingServerActivity extends AppCompatActivity
         numberOfRequests = 0;
         sumOfRequestTimes = 0;
         averageRequestTime = 0;
+        lastKnownDeltaTime = 0;
     }
 
     @Override
@@ -126,11 +136,11 @@ public class PingServerActivity extends AppCompatActivity
 
             @Override
             public void onResponse(String response) {
-                long deltaTime = System.currentTimeMillis() - timeBeforeRequest;
-                sumOfRequestTimes += deltaTime;
+                lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
+                sumOfRequestTimes += lastKnownDeltaTime;
                 numberOfRequests++;
                 averageRequestTime = sumOfRequestTimes / numberOfRequests;
-                mTextView.setText("Request time is: " + deltaTime + " number of requests: " + numberOfRequests
+                mTextView.setText("Request time is: " + lastKnownDeltaTime + " number of requests: " + numberOfRequests
                         + " average request time: " + averageRequestTime);
             }
         };
@@ -163,6 +173,10 @@ public class PingServerActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(task, new Date(), 1000);
     }
 
+
+    /**
+     * GOOGLE MAPS
+     */
     @Override
     public void onConnected(Bundle connectionHint) {
         setUpMapIfNeeded(); // Just in case
@@ -176,11 +190,30 @@ public class PingServerActivity extends AppCompatActivity
         updateCamera(currentLatitude, currentLongitude);
     }
 
+    private static double normalize(double min, double max, double value) {
+        return (value - min) / (max - min);
+    }
+
+    private int getColorBasedOnDeltaTime() {
+        double normalizedDeltaTime = normalize(0, 700, lastKnownDeltaTime);
+        normalizedDeltaTime = 1 - Math.max(0, Math.min(1, normalizedDeltaTime));
+
+        Log.d("dupa", "" + normalizedDeltaTime);
+
+        return Color.HSVToColor( new float[]{ 0, (float)normalizedDeltaTime, 1.f } );
+    }
+
     public void updateCamera(double latitude, double longitude) {
-        CameraUpdate center = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15);
+        currentLatitude = latitude;
+        currentLongitude = longitude;
+        CameraUpdate center = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16);
 
         mMap.moveCamera(center);
-        mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title("Your current position"));
+        mMap.addCircle(new CircleOptions()
+                .center(new LatLng(latitude, longitude))
+                .radius(12)
+                .fillColor(getColorBasedOnDeltaTime())
+                .strokeWidth(0));
     }
 
     @Override
@@ -220,6 +253,25 @@ public class PingServerActivity extends AppCompatActivity
     }
 
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Title"));
+        // Set up location listener:
+        // Acquire a reference to the system Location Manager
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        // Define a listener that responds to location updates
+        LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+                updateCamera(location.getLatitude(), location.getLongitude());
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
+        String locationProvider = LocationManager.GPS_PROVIDER;
+
+        locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
     }
 }
