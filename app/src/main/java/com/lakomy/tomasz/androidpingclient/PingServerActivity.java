@@ -61,6 +61,7 @@ public class PingServerActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
     private double currentLatitude;
     private double currentLongitude;
+    RequestQueue queue;
 
 
     @Override
@@ -79,6 +80,10 @@ public class PingServerActivity extends AppCompatActivity
         sumOfRequestTimes = 0;
         averageRequestTime = 0;
         lastKnownDeltaTime = 0;
+
+        queue = Volley.newRequestQueue(this);
+        queue.start();
+        timer = new Timer();
     }
 
     @Override
@@ -128,9 +133,7 @@ public class PingServerActivity extends AppCompatActivity
     public void pingServer(final View view) {
         // Instantiate the RequestQueue.
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
-        final RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://326b064b.ngrok.io";
-        timer = new Timer();
 
         final Response.Listener successHandler = new Response.Listener<String>() {
 
@@ -168,11 +171,13 @@ public class PingServerActivity extends AppCompatActivity
 
         stringRequest.setPriority(Request.Priority.IMMEDIATE);
         stringRequest.setShouldCache(false);
+        timeBeforeRequest = System.currentTimeMillis();
+        queue.add(stringRequest);
 
-        RequestTask task = new RequestTask(stringRequest, queue);
-
-        // Add the request to the RequestQueue.
-        timer.scheduleAtFixedRate(task, new Date(), 1000);
+//        RequestTask task = new RequestTask(stringRequest, queue);
+//
+//        // Add the request to the RequestQueue.
+//        timer.scheduleAtFixedRate(task, new Date(), 1000);
     }
 
 
