@@ -9,8 +9,8 @@ import java.util.TimerTask;
 class RequestTask extends TimerTask {
     StringRequest request;
     RequestQueue queue;
-    public RequestTask(StringRequest jsonRequest, RequestQueue requestQueue) {
-        request = jsonRequest;
+    public RequestTask(StringRequest stringRequest, RequestQueue requestQueue) {
+        request = stringRequest;
         queue = requestQueue;
     }
     public void run() {
