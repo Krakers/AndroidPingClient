@@ -97,10 +97,8 @@ public class PingServerActivity extends AppCompatActivity
 
     @Override
     protected void onResume() {
-        TextView mTextView = (TextView) findViewById(R.id.ping_info);
         super.onResume();
         setUpMapIfNeeded();
-        mTextView.setText("Android Ping!");
     }
 
     @Override
@@ -119,6 +117,8 @@ public class PingServerActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+            startActivity(intent);
             return true;
         }
 
@@ -143,8 +143,8 @@ public class PingServerActivity extends AppCompatActivity
                 sumOfRequestTimes += lastKnownDeltaTime;
                 numberOfRequests++;
                 averageRequestTime = sumOfRequestTimes / numberOfRequests;
-                mTextView.setText("Request time is: " + lastKnownDeltaTime + " number of requests: " + numberOfRequests
-                        + " average request time: " + averageRequestTime + "response: " + response);
+                mTextView.setText("Request number: #" + numberOfRequests
+                        + "\nAverage request time: " + averageRequestTime);
             }
         };
 
@@ -161,7 +161,7 @@ public class PingServerActivity extends AppCompatActivity
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<>();
-                String data = "gender";
+                String data = "sample_data";
                 params.put("data", data);
                 params.put("timestamp", "" + Calendar.getInstance().getTimeInMillis());
                 return params;
@@ -198,12 +198,12 @@ public class PingServerActivity extends AppCompatActivity
     }
 
     private int getColorBasedOnDeltaTime() {
-        double normalizedDeltaTime = normalize(0, 700, lastKnownDeltaTime);
+        double normalizedDeltaTime = normalize(0, 500, lastKnownDeltaTime);
         normalizedDeltaTime = 1 - Math.max(0, Math.min(1, normalizedDeltaTime));
 
         Log.d("normalizedDeltaTime", "" + normalizedDeltaTime);
 
-        return Color.HSVToColor( new float[]{ 0, (float)normalizedDeltaTime, 1.f } );
+        return Color.HSVToColor( new float[]{ 0, 1.f, (float)normalizedDeltaTime } );
     }
 
     public void updateCamera(double latitude, double longitude) {

@@ -1,16 +1,14 @@
 <resources>
-    <string name="app_name">AndroidPingClient</string>
+    <string name="app_name">Android Ping!</string>
 
     <string name="hello_world">Android Ping!</string>
     <string name="edit_message">Edit message</string>
-    <string name="button_send">Send message</string>
-    <string name="button_ping">Ping server</string>
+    <string name="button_send">Start measuring</string>
+    <string name="button_ping">Start measuring</string>
     <string name="button_check_signal_strength">Check signal strength</string>
     <string name="button_map">Signal map</string>
-    <string name="action_settings">Settings</string>
-    <string name="action_search">Search</string>
+    <string name="action_settings">Network Settings</string>
     <string name="title_activity_display_message">Android Ping!</string>
     <string name="title_activity_check_signal_strength">CheckSignalStrength</string>
-    <string name="title_activity_maps">Map</string>
     <string name="title_activity_ping_server">PingServerActivity</string>
 </resources>

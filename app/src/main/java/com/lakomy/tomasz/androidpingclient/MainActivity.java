@@ -1,6 +1,7 @@
 package com.lakomy.tomasz.androidpingclient;
 
 import android.content.Intent;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -32,10 +33,8 @@ public class MainActivity extends ActionBarActivity {
 
         switch (id) {
             case R.id.action_settings:
-                // Open settings
-                return true;
-            case R.id.action_search:
-                // Open search
+                final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
