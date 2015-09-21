@@ -125,11 +125,6 @@ public class PingServerActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void changeNetworkSettings(final View view) {
-        final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
-        startActivity(intent);
-    }
-
     public void pingServer(final View view) {
         // Instantiate the RequestQueue.
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
@@ -190,7 +185,7 @@ public class PingServerActivity extends AppCompatActivity
             currentLongitude = mLastLocation.getLongitude();
         }
 
-        updateCamera(currentLatitude, currentLongitude);
+        updateCamera(currentLatitude, currentLongitude, true);
     }
 
     private static double normalize(double min, double max, double value) {
@@ -201,22 +196,22 @@ public class PingServerActivity extends AppCompatActivity
         double normalizedDeltaTime = normalize(0, 500, lastKnownDeltaTime);
         normalizedDeltaTime = 1 - Math.max(0, Math.min(1, normalizedDeltaTime));
 
-        Log.d("normalizedDeltaTime", "" + normalizedDeltaTime);
-
-        return Color.HSVToColor( new float[]{ 0, 1.f, (float)normalizedDeltaTime } );
+        return Color.HSVToColor( new float[]{ 1.f, 0, (float)normalizedDeltaTime } );
     }
 
-    public void updateCamera(double latitude, double longitude) {
+    public void updateCamera(double latitude, double longitude, boolean doNotMark) {
         currentLatitude = latitude;
         currentLongitude = longitude;
         CameraUpdate center = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16);
 
         mMap.moveCamera(center);
-        mMap.addCircle(new CircleOptions()
-                .center(new LatLng(latitude, longitude))
-                .radius(12)
-                .fillColor(getColorBasedOnDeltaTime())
-                .strokeWidth(0));
+        if (!doNotMark) {
+            mMap.addCircle(new CircleOptions()
+                    .center(new LatLng(latitude, longitude))
+                    .radius(12)
+                    .fillColor(getColorBasedOnDeltaTime())
+                    .strokeWidth(0));
+        }
     }
 
     @Override
@@ -264,7 +259,7 @@ public class PingServerActivity extends AppCompatActivity
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
-                updateCamera(location.getLatitude(), location.getLongitude());
+                updateCamera(location.getLatitude(), location.getLongitude(), false);
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {}
