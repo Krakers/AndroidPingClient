@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -42,15 +43,28 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
+    private int getDataFromEditTextView(int id) {
+        EditText edit = (EditText)findViewById(id);
+        String strValue = edit.getText().toString();
+        int retVal = 0;
+
+        if (strValue.equals("") == false) {
+            retVal = Integer.parseInt(strValue);
+        }
+
+        return retVal;
+    }
+
     /** Called when the user clicks the Send button **/
     public void sendMessage(View view) {
         Intent intent = new Intent(this, PingServerActivity.class);
+        int packetSize = getDataFromEditTextView(R.id.packet_size);
+        int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
+
+        intent.putExtra("packet_size", packetSize);
+        intent.putExtra("number_of_packets", numberOfPackets);
+
         startActivity(intent);
     }
 
-    /** Called when user clicks the Check Signal Strength button **/
-    public void checkSignalStrength(View view) {
-        Intent intent = new Intent(this, CheckSignalStrength.class);
-        startActivity(intent);
-    }
 }

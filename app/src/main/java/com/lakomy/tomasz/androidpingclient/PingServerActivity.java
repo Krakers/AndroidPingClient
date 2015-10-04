@@ -63,10 +63,19 @@ public class PingServerActivity extends AppCompatActivity
     private double currentLongitude;
     RequestQueue queue;
 
+    int packetSize;
+    int numberOfPackets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            packetSize = extras.getInt("packet_size", 16);
+            numberOfPackets = extras.getInt("number_of_packets", 0);
+        }
+        Log.d("dupa", "packetSize: " + packetSize);
+        Log.d("dupa", "numberOfPackets: " + numberOfPackets);
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
         buildGoogleApiClient();
