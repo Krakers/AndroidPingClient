@@ -39,11 +39,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.SecureRandom;
 import java.sql.Time;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -134,10 +136,23 @@ public class PingServerActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    private String generateRandomData(int length) {
+        char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+        StringBuilder sb = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < length; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+
+        Log.d("dupa", "randomData: " + sb.toString());
+        return sb.toString();
+    }
+
+    // HTTP request:
     public void pingServer(final View view) {
-        // Instantiate the RequestQueue.
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
-        String url = "http://aping.dotcloudapp.com";
+        String url = "http://192.168.0.10:8000";
 
         final Response.Listener successHandler = new Response.Listener<String>() {
 
@@ -147,8 +162,9 @@ public class PingServerActivity extends AppCompatActivity
                 sumOfRequestTimes += lastKnownDeltaTime;
                 numberOfRequests++;
                 averageRequestTime = sumOfRequestTimes / numberOfRequests;
-                mTextView.setText("Request number: #" + numberOfRequests
-                        + "\nAverage request time: " + averageRequestTime);
+                mTextView.setText(response);
+//                mTextView.setText("Request number: #" + numberOfRequests
+//                        + "\nAverage request time: " + averageRequestTime);
             }
         };
 
@@ -165,7 +181,7 @@ public class PingServerActivity extends AppCompatActivity
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<>();
-                String data = "sample_data";
+                String data = generateRandomData(packetSize);
                 params.put("data", data);
                 params.put("timestamp", "" + Calendar.getInstance().getTimeInMillis());
                 return params;

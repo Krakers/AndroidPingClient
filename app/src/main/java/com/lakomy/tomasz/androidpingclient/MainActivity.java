@@ -48,7 +48,7 @@ public class MainActivity extends ActionBarActivity {
         String strValue = edit.getText().toString();
         int retVal = 0;
 
-        if (strValue.equals("") == false) {
+        if (!strValue.equals("")) {
             retVal = Integer.parseInt(strValue);
         }
 
