@@ -41,9 +41,11 @@ import org.json.JSONObject;
 
 import java.security.SecureRandom;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
@@ -64,6 +66,7 @@ public class PingServerActivity extends AppCompatActivity
     private double currentLatitude;
     private double currentLongitude;
     RequestQueue queue;
+    List<Long> results;
 
     int packetSize;
     int numberOfPackets;
@@ -74,7 +77,7 @@ public class PingServerActivity extends AppCompatActivity
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             packetSize = extras.getInt("packet_size", 16);
-            numberOfPackets = extras.getInt("number_of_packets", 0);
+            numberOfPackets = extras.getInt("number_of_packets", 10);
         }
         Log.d("aping", "packetSize: " + packetSize);
         Log.d("aping", "numberOfPackets: " + numberOfPackets);
@@ -91,6 +94,7 @@ public class PingServerActivity extends AppCompatActivity
         sumOfRequestTimes = 0;
         averageRequestTime = 0;
         lastKnownDeltaTime = 0;
+        results = new ArrayList<>();
 
         queue = Volley.newRequestQueue(this);
         queue.start();
@@ -153,7 +157,6 @@ public class PingServerActivity extends AppCompatActivity
         return numberOfRequests == numberOfPackets;
     }
 
-    // HTTP request:
     public void pingServer(final View view) {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
         String url = "http://192.168.0.10:8000";
@@ -163,6 +166,7 @@ public class PingServerActivity extends AppCompatActivity
             @Override
             public void onResponse(String response) {
                 lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
+                results.add(lastKnownDeltaTime);
                 sumOfRequestTimes += lastKnownDeltaTime;
                 numberOfRequests++;
                 averageRequestTime = sumOfRequestTimes / numberOfRequests;
@@ -204,7 +208,18 @@ public class PingServerActivity extends AppCompatActivity
         RequestTask task = new RequestTask(stringRequest, queue);
 
         // Add the request to the RequestQueue.
-        timer.scheduleAtFixedRate(task, new Date(), 1000);
+        timer.scheduleAtFixedRate(task, new Date(), 2000);
+    }
+
+
+    public void showResults(View view) {
+        Intent intent = new Intent(this, ResultsActivity.class);
+        long[] resultsArray = new long[results.size()];
+        for (int i = 0; i < results.size(); i++) {
+            resultsArray[i] = results.get(i);
+        }
+        intent.putExtra("results", resultsArray);
+        startActivity(intent);
     }
 
 
