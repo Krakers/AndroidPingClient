@@ -76,8 +76,8 @@ public class PingServerActivity extends AppCompatActivity
             packetSize = extras.getInt("packet_size", 16);
             numberOfPackets = extras.getInt("number_of_packets", 0);
         }
-        Log.d("dupa", "packetSize: " + packetSize);
-        Log.d("dupa", "numberOfPackets: " + numberOfPackets);
+        Log.d("aping", "packetSize: " + packetSize);
+        Log.d("aping", "numberOfPackets: " + numberOfPackets);
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
         buildGoogleApiClient();
@@ -144,9 +144,13 @@ public class PingServerActivity extends AppCompatActivity
             char c = chars[random.nextInt(chars.length)];
             sb.append(c);
         }
+        Log.d("aping", "randomData: " + sb.toString());
 
-        Log.d("dupa", "randomData: " + sb.toString());
         return sb.toString();
+    }
+
+    public boolean shouldCancelNextRequest() {
+        return numberOfRequests == numberOfPackets;
     }
 
     // HTTP request:
@@ -162,9 +166,16 @@ public class PingServerActivity extends AppCompatActivity
                 sumOfRequestTimes += lastKnownDeltaTime;
                 numberOfRequests++;
                 averageRequestTime = sumOfRequestTimes / numberOfRequests;
-                mTextView.setText(response);
-//                mTextView.setText("Request number: #" + numberOfRequests
-//                        + "\nAverage request time: " + averageRequestTime);
+
+                if (shouldCancelNextRequest()) {
+                    mTextView.setText("Measurement finished!\n" +
+                            "Average request time: " + averageRequestTime);
+                    timer.cancel();
+                } else {
+                    mTextView.setText("Sending " + numberOfPackets + " packets"
+                            + "\nRequest number: #" + numberOfRequests
+                            + "\nAverage request time: " + averageRequestTime);
+                }
             }
         };
 

@@ -61,6 +61,15 @@ public class MainActivity extends ActionBarActivity {
         int packetSize = getDataFromEditTextView(R.id.packet_size);
         int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
 
+        // Set default values:
+        if (packetSize == 0) {
+            packetSize = 20;
+        }
+
+        if (numberOfPackets == 0) {
+            numberOfPackets = 10;
+        }
+
         intent.putExtra("packet_size", packetSize);
         intent.putExtra("number_of_packets", numberOfPackets);
 

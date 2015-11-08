@@ -25,3 +25,11 @@ dependencies {
     compile 'com.google.android.gms:play-services:7.5.0'
     compile project(":volley")
 }
+
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile 'com.github.PhilJay:MPAndroidChart:v2.1.6'
+}
