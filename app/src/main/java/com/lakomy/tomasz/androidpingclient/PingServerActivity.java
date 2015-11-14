@@ -70,6 +70,7 @@ public class PingServerActivity extends AppCompatActivity
 
     int packetSize;
     int numberOfPackets;
+    String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,9 +79,11 @@ public class PingServerActivity extends AppCompatActivity
         if (extras != null) {
             packetSize = extras.getInt("packet_size", 16);
             numberOfPackets = extras.getInt("number_of_packets", 10);
+            url = extras.getString("url");
         }
         Log.d("aping", "packetSize: " + packetSize);
         Log.d("aping", "numberOfPackets: " + numberOfPackets);
+        Log.d("aping", "url: " + url);
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
         buildGoogleApiClient();
@@ -159,7 +162,6 @@ public class PingServerActivity extends AppCompatActivity
 
     public void pingServer(final View view) {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
-        String url = "http://192.168.0.10:8000";
 
         final Response.Listener successHandler = new Response.Listener<String>() {
 

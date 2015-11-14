@@ -60,6 +60,9 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, PingServerActivity.class);
         int packetSize = getDataFromEditTextView(R.id.packet_size);
         int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
+        String ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
+        int port = getDataFromEditTextView(R.id.port_number);
+        String url;
 
         // Set default values:
         if (packetSize == 0) {
@@ -70,8 +73,16 @@ public class MainActivity extends ActionBarActivity {
             numberOfPackets = 10;
         }
 
+        if (ipAddress.isEmpty() || port == 0) {
+            ipAddress = "192.168.0.10";
+            port = 8000;
+        }
+
+        url = "http://" + ipAddress + ":" + port;
+
         intent.putExtra("packet_size", packetSize);
         intent.putExtra("number_of_packets", numberOfPackets);
+        intent.putExtra("url", url);
 
         startActivity(intent);
     }
