@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ToggleButton;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -63,10 +64,13 @@ public class MainActivity extends ActionBarActivity {
         String ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
         int port = getDataFromEditTextView(R.id.port_number);
         String url;
+        String protocol;
+
+        ToggleButton protocolButton = (ToggleButton)findViewById(R.id.protocol_button);
 
         // Set default values:
         if (packetSize == 0) {
-            packetSize = 20;
+            packetSize = 16;
         }
 
         if (numberOfPackets == 0) {
@@ -78,11 +82,16 @@ public class MainActivity extends ActionBarActivity {
             port = 8000;
         }
 
+        protocol = protocolButton.isChecked() ? "http" : "tcp";
+
         url = "http://" + ipAddress + ":" + port;
 
         intent.putExtra("packet_size", packetSize);
         intent.putExtra("number_of_packets", numberOfPackets);
+        intent.putExtra("ip_address", ipAddress);
+        intent.putExtra("port", port);
         intent.putExtra("url", url);
+        intent.putExtra("protocol", protocol);
 
         startActivity(intent);
     }

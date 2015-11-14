@@ -169,7 +169,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="New ToggleButton"
-            android:id="@+id/toggleButton"
+            android:id="@+id/protocol_button"
             android:textOff="HTTP"
             android:textOn="TCP/IP" />
 

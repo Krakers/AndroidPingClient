@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.Socket;
 import java.security.SecureRandom;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -71,6 +73,9 @@ public class PingServerActivity extends AppCompatActivity
     int packetSize;
     int numberOfPackets;
     String url;
+    String protocol;
+    String ipAddress;
+    int port;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +85,15 @@ public class PingServerActivity extends AppCompatActivity
             packetSize = extras.getInt("packet_size", 16);
             numberOfPackets = extras.getInt("number_of_packets", 10);
             url = extras.getString("url");
+            ipAddress = extras.getString("ip_address");
+            port= extras.getInt("port", 10);
+            protocol = extras.getString("protocol");
         }
         Log.d("aping", "packetSize: " + packetSize);
         Log.d("aping", "numberOfPackets: " + numberOfPackets);
         Log.d("aping", "url: " + url);
+        Log.d("aping", "ip_address: " + ipAddress);
+        Log.d("aping", "port: " + port);
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
         buildGoogleApiClient();
@@ -160,7 +170,7 @@ public class PingServerActivity extends AppCompatActivity
         return numberOfRequests == numberOfPackets;
     }
 
-    public void pingServer(final View view) {
+    public void performHttpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
 
         final Response.Listener successHandler = new Response.Listener<String>() {
@@ -211,6 +221,20 @@ public class PingServerActivity extends AppCompatActivity
 
         // Add the request to the RequestQueue.
         timer.scheduleAtFixedRate(task, new Date(), 2000);
+
+    }
+
+    public void performTcpRequests() {
+        SocketRequestTask tcpRequest = new SocketRequestTask(ipAddress, port, packetSize);
+        tcpRequest.execute();
+    }
+
+    public void pingServer(final View view) {
+        if (protocol.equals("http")) {
+            performHttpRequests();
+        } else {
+            performTcpRequests();
+        }
     }
 
 
