@@ -20,24 +20,38 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="Android Ping!"
+        android:id="@+id/textView4"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="center"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:elegantTextHeight="false"
+        android:textSize="50dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Enter the following data to begin:"
         android:id="@+id/textView"
         android:textColor="#ffffff"
-        android:layout_marginTop="129dp"
-        android:layout_below="@+id/textView4"
-        android:layout_alignParentStart="true" />
+        android:textSize="22dp"
+        android:layout_above="@+id/linearLayout4"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="39dp" />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="44dp"
-        android:layout_alignParentTop="false"
         android:layout_alignWithParentIfMissing="false"
-        android:id="@+id/linearLayout">
+        android:id="@+id/linearLayout"
+        android:layout_marginBottom="71dp"
+        android:layout_above="@+id/button"
+        android:layout_alignParentStart="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -60,8 +74,36 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout"
+        android:layout_alignWithParentIfMissing="false"
+        android:id="@+id/linearLayout5"
+        android:layout_above="@+id/linearLayout3"
         android:layout_alignParentStart="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Port number:"
+            android:id="@+id/textView6"
+            android:textColor="#dedede" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:layout_weight="1"
+            android:inputType="number" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/linearLayout"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/linearLayout3">
 
         <TextView
             android:layout_width="wrap_content"
@@ -80,18 +122,30 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Android Ping!"
-        android:id="@+id/textView4"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:textAlignment="center"
-        android:textColor="#ffffff"
-        android:textStyle="bold"
-        android:typeface="sans"
-        android:elegantTextHeight="false"
-        android:textSize="50dp" />
+        android:layout_alignWithParentIfMissing="false"
+        android:id="@+id/linearLayout4"
+        android:layout_above="@+id/linearLayout5"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="IP address:"
+            android:id="@+id/textView5"
+            android:textColor="#dedede" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:id="@+id/ip_address"
+            android:layout_weight="1"
+            android:inputType="textUri" />
+    </LinearLayout>
 
 </RelativeLayout>
