@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.net.Socket;
 import java.security.SecureRandom;
@@ -57,21 +58,21 @@ import java.util.TimerTask;
 public class PingServerActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    int numberOfRequests;
-    int sumOfRequestTimes;
-    int averageRequestTime;
-    long lastKnownDeltaTime;
-    Timer timer;
+    static public int numberOfRequests;
+    static public int sumOfRequestTimes;
+    static public int averageRequestTime;
+    static public long lastKnownDeltaTime;
+    static public Timer timer;
     static public long timeBeforeRequest = System.currentTimeMillis();
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
     private double currentLatitude;
     private double currentLongitude;
     RequestQueue queue;
-    List<Long> results;
+    static public List<Long> results;
 
     int packetSize;
-    int numberOfPackets;
+    static public int numberOfPackets;
     String url;
     String protocol;
     String ipAddress;
@@ -157,6 +158,26 @@ public class PingServerActivity extends AppCompatActivity
         return numberOfRequests == numberOfPackets;
     }
 
+    public static void updateRequestStatistics() {
+        lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
+        results.add(lastKnownDeltaTime);
+        sumOfRequestTimes += lastKnownDeltaTime;
+        numberOfRequests++;
+        averageRequestTime = sumOfRequestTimes / numberOfRequests;
+    }
+
+    public void updateCurrentResults(TextView textView) {
+        if (shouldCancelNextRequest()) {
+            textView.setText("Measurement finished!\n" +
+                    "Average request time: " + averageRequestTime);
+            timer.cancel();
+        } else {
+            textView.setText("Sending " + numberOfPackets + " packets"
+                    + "\nRequest number: #" + numberOfRequests
+                    + "\nAverage request time: " + averageRequestTime);
+        }
+    }
+
     public void performHttpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
 
@@ -164,21 +185,8 @@ public class PingServerActivity extends AppCompatActivity
 
             @Override
             public void onResponse(String response) {
-                lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
-                results.add(lastKnownDeltaTime);
-                sumOfRequestTimes += lastKnownDeltaTime;
-                numberOfRequests++;
-                averageRequestTime = sumOfRequestTimes / numberOfRequests;
-
-                if (shouldCancelNextRequest()) {
-                    mTextView.setText("Measurement finished!\n" +
-                            "Average request time: " + averageRequestTime);
-                    timer.cancel();
-                } else {
-                    mTextView.setText("Sending " + numberOfPackets + " packets"
-                            + "\nRequest number: #" + numberOfRequests
-                            + "\nAverage request time: " + averageRequestTime);
-                }
+                updateRequestStatistics();
+                updateCurrentResults(mTextView);
             }
         };
 
@@ -210,12 +218,12 @@ public class PingServerActivity extends AppCompatActivity
 
         // Add the request to the RequestQueue.
         timer.scheduleAtFixedRate(task, new Date(), 2000);
-
     }
 
     public void performTcpRequests() {
-        SocketRequestTask tcpRequest = new SocketRequestTask(ipAddress, port, packetSize);
-        tcpRequest.execute();
+        final TextView mTextView = (TextView) findViewById(R.id.ping_info);
+        RequestTask task = new RequestTask(ipAddress, port, packetSize, mTextView);
+        timer.scheduleAtFixedRate(task, new Date(), 2000);
     }
 
     public void pingServer(final View view) {

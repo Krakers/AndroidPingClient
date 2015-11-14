@@ -2,6 +2,7 @@ package com.lakomy.tomasz.androidpingclient;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -18,12 +19,14 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
     int dstPort;
     String response = "";
     int packetSize;
+    TextView textView;
 
-    SocketRequestTask(String addr, int port, int pSize) {
+    SocketRequestTask(String addr, int port, int pSize, TextView txtView) {
         Log.d("aping", "SocketRequestTask: " + addr + " port:" + port);
         dstAddress = addr;
         dstPort = port;
         packetSize = pSize;
+        textView = txtView;
     }
 
     public String getResponse() {
@@ -44,6 +47,11 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
 
             // Set packet size on the server side:
             out.println("PACKET_SIZE:" + packetSize);
+
+            // Store time before request:
+            PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
+
+            // Send data:
             out.println(str);
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(packetSize);
@@ -76,9 +84,27 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
+    private boolean shouldCancelNextRequest() {
+        return PingServerActivity.numberOfRequests == PingServerActivity.numberOfPackets;
+    }
+
+    private void updateCurrentResults(TextView textView) {
+        if (shouldCancelNextRequest()) {
+            textView.setText("Measurement finished!\n" +
+                    "Average request time: " + PingServerActivity.averageRequestTime);
+            PingServerActivity.timer.cancel();
+        } else {
+            textView.setText("Sending " + PingServerActivity.numberOfPackets + " packets"
+                    + "\nRequest number: #" + PingServerActivity.numberOfRequests
+                    + "\nAverage request time: " + PingServerActivity.averageRequestTime);
+        }
+    }
+
     @Override
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
-        Log.d("aping", response);
+        Log.d("aping", "Received data: " + response);
+        PingServerActivity.updateRequestStatistics();
+        updateCurrentResults(textView);
     }
 }
