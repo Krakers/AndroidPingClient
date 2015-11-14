@@ -3,9 +3,13 @@ package com.lakomy.tomasz.androidpingclient;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -16,9 +20,14 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
     int packetSize;
 
     SocketRequestTask(String addr, int port, int pSize) {
+        Log.d("aping", "SocketRequestTask: " + addr + " port:" + port);
         dstAddress = addr;
         dstPort = port;
         packetSize = pSize;
+    }
+
+    public String getResponse() {
+        return response;
     }
 
     @Override
@@ -27,6 +36,15 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
 
         try {
             socket = new Socket(dstAddress, dstPort);
+            RandomDataGenerator generator = new RandomDataGenerator();
+            String str = generator.generateRandomData(packetSize);
+            str = str.trim();
+            PrintWriter out = new PrintWriter(new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream())), true);
+
+            // Set packet size on the server side:
+            out.println("PACKET_SIZE:" + packetSize);
+            out.println(str);
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(packetSize);
             byte[] buffer = new byte[packetSize];
@@ -38,6 +56,7 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
                 byteArrayOutputStream.write(buffer, 0, bytesRead);
                 response += byteArrayOutputStream.toString("UTF-8");
             }
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
             response = "UnknownHostException: " + e.toString();

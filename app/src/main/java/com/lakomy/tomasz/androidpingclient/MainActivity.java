@@ -82,7 +82,7 @@ public class MainActivity extends ActionBarActivity {
             port = 8000;
         }
 
-        protocol = protocolButton.isChecked() ? "http" : "tcp";
+        protocol = protocolButton.isChecked() ? "tcp" : "http";
 
         url = "http://" + ipAddress + ":" + port;
 

@@ -153,19 +153,6 @@ public class PingServerActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private String generateRandomData(int length) {
-        char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-        StringBuilder sb = new StringBuilder();
-        SecureRandom random = new SecureRandom();
-        for (int i = 0; i < length; i++) {
-            char c = chars[random.nextInt(chars.length)];
-            sb.append(c);
-        }
-        Log.d("aping", "randomData: " + sb.toString());
-
-        return sb.toString();
-    }
-
     public boolean shouldCancelNextRequest() {
         return numberOfRequests == numberOfPackets;
     }
@@ -208,7 +195,9 @@ public class PingServerActivity extends AppCompatActivity
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<>();
-                String data = generateRandomData(packetSize);
+                RandomDataGenerator generator = new RandomDataGenerator();
+
+                String data = generator.generateRandomData(packetSize);
                 params.put("data", data);
                 params.put("timestamp", "" + Calendar.getInstance().getTimeInMillis());
                 return params;
@@ -230,6 +219,7 @@ public class PingServerActivity extends AppCompatActivity
     }
 
     public void pingServer(final View view) {
+        Log.d("aping", "protocol: " + protocol);
         if (protocol.equals("http")) {
             performHttpRequests();
         } else {
