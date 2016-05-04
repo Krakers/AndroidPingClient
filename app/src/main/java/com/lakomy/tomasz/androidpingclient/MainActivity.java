@@ -63,6 +63,7 @@ public class MainActivity extends ActionBarActivity {
         int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
         String ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
         int port = getDataFromEditTextView(R.id.port_number);
+        int timeBetweenRequests = getDataFromEditTextView(R.id.request_interval);
         String url;
         String protocol;
 
@@ -71,6 +72,10 @@ public class MainActivity extends ActionBarActivity {
         // Set default values:
         if (packetSize == 0) {
             packetSize = 16;
+        }
+
+        if (timeBetweenRequests == 0) {
+            timeBetweenRequests = 2;
         }
 
         if (numberOfPackets == 0) {
@@ -92,6 +97,7 @@ public class MainActivity extends ActionBarActivity {
         intent.putExtra("port", port);
         intent.putExtra("url", url);
         intent.putExtra("protocol", protocol);
+        intent.putExtra("request_interval", timeBetweenRequests);
 
         startActivity(intent);
     }

@@ -77,6 +77,7 @@ public class PingServerActivity extends AppCompatActivity
     String protocol;
     String ipAddress;
     int port;
+    int requestInterval;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +88,9 @@ public class PingServerActivity extends AppCompatActivity
             numberOfPackets = extras.getInt("number_of_packets", 10);
             url = extras.getString("url");
             ipAddress = extras.getString("ip_address");
-            port= extras.getInt("port", 10);
+            port = extras.getInt("port", 10);
             protocol = extras.getString("protocol");
+            requestInterval = extras.getInt("request_interval", 10);
         }
         Log.d("aping", "packetSize: " + packetSize);
         Log.d("aping", "numberOfPackets: " + numberOfPackets);
@@ -217,13 +219,13 @@ public class PingServerActivity extends AppCompatActivity
         RequestTask task = new RequestTask(stringRequest, queue);
 
         // Add the request to the RequestQueue.
-        timer.scheduleAtFixedRate(task, new Date(), 2000);
+        timer.scheduleAtFixedRate(task, new Date(), requestInterval * 1000);
     }
 
     public void performTcpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
         RequestTask task = new RequestTask(ipAddress, port, packetSize, mTextView);
-        timer.scheduleAtFixedRate(task, new Date(), 2000);
+        timer.scheduleAtFixedRate(task, new Date(), requestInterval * 1000);
     }
 
     public void pingServer(final View view) {

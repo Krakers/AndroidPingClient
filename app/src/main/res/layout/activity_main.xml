@@ -56,7 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Packet size (in bytes):"
+            android:text="Packet size (bytes):"
             android:id="@+id/textView2"
             android:textColor="#dedede" />
 
@@ -66,7 +66,41 @@
             android:inputType="number"
             android:ems="10"
             android:id="@+id/packet_size"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textColor="#dedede"
+            android:text="1024"
+            android:gravity="right"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignWithParentIfMissing="false"
+        android:id="@+id/linearLayout7"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Time between requests (s):"
+            android:id="@+id/textView8"
+            android:textColor="#dedede" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/request_interval"
+            android:layout_weight="1"
+            android:textColor="#dedede"
+            android:text="2"
+            android:gravity="right"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -92,7 +126,10 @@
             android:ems="10"
             android:id="@+id/port_number"
             android:layout_weight="1"
-            android:inputType="number" />
+            android:inputType="number"
+            android:textColor="#dedede"
+            android:gravity="right"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -117,7 +154,11 @@
             android:inputType="number"
             android:ems="10"
             android:id="@+id/number_of_packets"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textColor="#dedede"
+            android:textStyle="bold"
+            android:text="100"
+            android:gravity="right" />
     </LinearLayout>
 
     <LinearLayout
@@ -144,7 +185,10 @@
             android:ems="10"
             android:id="@+id/ip_address"
             android:layout_weight="1"
-            android:inputType="textUri" />
+            android:inputType="textUri"
+            android:textColor="#dedede"
+            android:textStyle="bold"
+            android:gravity="right" />
     </LinearLayout>
 
     <LinearLayout
