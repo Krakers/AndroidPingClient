@@ -2,14 +2,27 @@ package com.lakomy.tomasz.androidpingclient;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.opencsv.CSVWriter;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Calendar;
+
 
 
 public class ResultsActivity extends ActionBarActivity {
@@ -48,6 +61,44 @@ public class ResultsActivity extends ActionBarActivity {
         LineData dataLineData = new LineData(xVals, dataSets);
 
         chart.setData(dataLineData);
+    }
+
+    public void saveResults(final View view) {
+        Log.d("aping", "Save results");
+        int packetSize = extras.getInt("packet_size", 16);
+        int numberOfPackets = extras.getInt("numberOfPackets", 10);
+        String protocol = extras.getString("protocol");
+        int requestInterval = extras.getInt("requestInterval", 10);
+        int averageRequestTime = extras.getInt("averageRequestTime", 10);
+        String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
+        String currentTime = sdf.format(c.getTime());
+
+        String fileName = "AnalysisData " + currentTime + ".csv";
+        String filePath = baseDir + File.separator + fileName;
+        File f = new File(filePath);
+        CSVWriter writer;
+
+        try {
+            writer = new CSVWriter(new FileWriter(filePath));
+            String[] resultsArray = new String[results.length + 6];
+            resultsArray[0] = "Measurement results:";
+            resultsArray[1] = "Protocol: " + protocol;
+            resultsArray[2] = "Packet size: " + packetSize;
+            resultsArray[3] = "Number of packets: " + numberOfPackets;
+            resultsArray[4] = "Request interval: " + requestInterval;
+            resultsArray[5] = "Average request time: " + averageRequestTime;
+            for(int i = 1; i < results.length; i++){
+                resultsArray[i + 6] = String.valueOf(results[i]);
+            }
+
+            writer.writeNext(resultsArray);
+            writer.close();
+
+        } catch (IOException e) {
+            Log.d("aping", "Save failed");
+        }
     }
 
     @Override

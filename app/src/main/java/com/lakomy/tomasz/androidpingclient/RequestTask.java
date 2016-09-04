@@ -32,6 +32,7 @@ class RequestTask extends TimerTask {
         queue = requestQueue;
         type = "http";
     }
+
     public void run() {
         PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
         if (type.equals("http")) {

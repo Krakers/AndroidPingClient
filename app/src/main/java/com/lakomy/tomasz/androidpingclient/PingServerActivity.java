@@ -173,7 +173,7 @@ public class PingServerActivity extends AppCompatActivity
             textView.setText("Measurement finished!\n" +
                     "Average request time: " + averageRequestTime);
             timer.cancel();
-        } else {
+        } else {    
             textView.setText("Sending " + numberOfPackets + " packets"
                     + "\nRequest number: #" + numberOfRequests
                     + "\nAverage request time: " + averageRequestTime);
@@ -245,6 +245,11 @@ public class PingServerActivity extends AppCompatActivity
             resultsArray[i] = results.get(i);
         }
         intent.putExtra("results", resultsArray);
+        intent.putExtra("protocol", protocol);
+        intent.putExtra("requestInterval", requestInterval);
+        intent.putExtra("packetSize", packetSize);
+        intent.putExtra("numberOfPackets", numberOfPackets);
+        intent.putExtra("averageRequestTime", averageRequestTime);
         startActivity(intent);
     }
 

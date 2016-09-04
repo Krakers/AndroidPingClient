@@ -98,7 +98,7 @@
             android:id="@+id/request_interval"
             android:layout_weight="1"
             android:textColor="#dedede"
-            android:text="2"
+            android:text="1"
             android:gravity="right"
             android:textStyle="bold" />
     </LinearLayout>
@@ -157,7 +157,7 @@
             android:layout_weight="1"
             android:textColor="#dedede"
             android:textStyle="bold"
-            android:text="100"
+            android:text="10"
             android:gravity="right" />
     </LinearLayout>
 

@@ -89,7 +89,8 @@ public class MainActivity extends ActionBarActivity {
 
         protocol = protocolButton.isChecked() ? "tcp" : "http";
 
-        url = "http://" + ipAddress + ":" + port;
+        //url = "http://" + ipAddress + ":" + port;
+        url = "https://thawing-castle-69711.herokuapp.com/";
 
         intent.putExtra("packet_size", packetSize);
         intent.putExtra("number_of_packets", numberOfPackets);
