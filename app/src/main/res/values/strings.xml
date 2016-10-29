@@ -12,4 +12,10 @@
     <string name="title_activity_check_signal_strength">CheckSignalStrength</string>
     <string name="title_activity_ping_server">PingServerActivity</string>
     <string name="title_activity_results">Measurement results</string>
+
+    <string-array name="intervals">
+        <item>Seconds</item>
+        <item>Milliseconds</item>
+        <item>Minutes</item>
+    </string-array>
 </resources>

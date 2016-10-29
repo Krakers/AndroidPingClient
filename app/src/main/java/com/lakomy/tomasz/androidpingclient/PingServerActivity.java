@@ -2,6 +2,7 @@ package com.lakomy.tomasz.androidpingclient;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -11,10 +12,18 @@ import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellLocation;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.PhoneStateListener;
+import android.telephony.SignalStrength;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -76,8 +85,13 @@ public class PingServerActivity extends AppCompatActivity
     String url;
     String protocol;
     String ipAddress;
+    String intervalUnit;
     int port;
     int requestInterval;
+    boolean isInProgress;
+    Button pingButton;
+    TelephonyManager telephonyManager;
+    PingPhoneStateListener pingPhoneStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,8 +104,10 @@ public class PingServerActivity extends AppCompatActivity
             ipAddress = extras.getString("ip_address");
             port = extras.getInt("port", 10);
             protocol = extras.getString("protocol");
+            intervalUnit = extras.getString("interval_unit");
             requestInterval = extras.getInt("request_interval", 10);
         }
+
         Log.d("aping", "packetSize: " + packetSize);
         Log.d("aping", "numberOfPackets: " + numberOfPackets);
         Log.d("aping", "url: " + url);
@@ -99,6 +115,7 @@ public class PingServerActivity extends AppCompatActivity
         Log.d("aping", "port: " + port);
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
+        setRequestInterval();
         buildGoogleApiClient();
     }
 
@@ -111,15 +128,29 @@ public class PingServerActivity extends AppCompatActivity
         averageRequestTime = 0;
         lastKnownDeltaTime = 0;
         results = new ArrayList<>();
+        isInProgress = false;
+        pingButton = (Button)findViewById(R.id.ping_button);
+        telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
 
         queue = Volley.newRequestQueue(this);
         queue.start();
         timer = new Timer();
+        pingPhoneStateListener = new PingPhoneStateListener();
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager.listen(pingPhoneStateListener, PhoneStateListener.LISTEN_CALL_FORWARDING_INDICATOR |
+                PhoneStateListener.LISTEN_CALL_STATE |
+                PhoneStateListener.LISTEN_CELL_LOCATION |
+                PhoneStateListener.LISTEN_DATA_ACTIVITY |
+                PhoneStateListener.LISTEN_DATA_CONNECTION_STATE |
+                PhoneStateListener.LISTEN_MESSAGE_WAITING_INDICATOR |
+                PhoneStateListener.LISTEN_SERVICE_STATE |
+                PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        isInProgress = false;
         if (timer != null) {
             timer.cancel();
             timer.purge();
@@ -156,6 +187,17 @@ public class PingServerActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    public void setRequestInterval() {
+        switch (intervalUnit) {
+            case "Seconds":
+                requestInterval *= 1000;
+                break;
+            case "Minutes":
+                requestInterval *= 60000;
+                break;
+        }
+    }
+
     public boolean shouldCancelNextRequest() {
         return numberOfRequests == numberOfPackets;
     }
@@ -169,15 +211,38 @@ public class PingServerActivity extends AppCompatActivity
     }
 
     public void updateCurrentResults(TextView textView) {
+        getCurrentNetworkData();
         if (shouldCancelNextRequest()) {
+            pingButton.setText("Please wait...");
             textView.setText("Measurement finished!\n" +
                     "Average request time: " + averageRequestTime);
+            pingButton.setText("Start measuring");
+            isInProgress = false;
             timer.cancel();
         } else {    
             textView.setText("Sending " + numberOfPackets + " packets"
                     + "\nRequest number: #" + numberOfRequests
                     + "\nAverage request time: " + averageRequestTime);
         }
+    }
+
+    public void getCurrentNetworkData() {
+        List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
+        if (allCellInfo != null) {
+            Log.d("aping", allCellInfo.toString());
+        } else {
+            Log.d("aping", "allCellInfo is null");
+        }
+
+
+//        if (all != null) {
+//            CellInfoGsm cellinfogsm = (CellInfoGsm) all.get(0);
+//            CellSignalStrengthGsm cellSignalStrengthGsm = cellinfogsm.getCellSignalStrength();
+//
+//            int strengthDbm = cellSignalStrengthGsm.getDbm();
+//            TextView strength = (TextView) findViewById(R.id.signal_info);
+//            strength.setText(strengthDbm + "dBm ");
+//        }
     }
 
     public void performHttpRequests() {
@@ -219,21 +284,27 @@ public class PingServerActivity extends AppCompatActivity
         RequestTask task = new RequestTask(stringRequest, queue);
 
         // Add the request to the RequestQueue.
-        timer.scheduleAtFixedRate(task, new Date(), requestInterval * 1000);
+        isInProgress = true;
+        timer.scheduleAtFixedRate(task, new Date(), requestInterval);
     }
 
     public void performTcpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
         RequestTask task = new RequestTask(ipAddress, port, packetSize, mTextView);
-        timer.scheduleAtFixedRate(task, new Date(), requestInterval * 1000);
+        isInProgress = true;
+        timer.scheduleAtFixedRate(task, new Date(), requestInterval);
     }
 
     public void pingServer(final View view) {
-        Log.d("aping", "protocol: " + protocol);
-        if (protocol.equals("http")) {
-            performHttpRequests();
-        } else {
-            performTcpRequests();
+        if (!isInProgress) {
+            Log.d("aping", "protocol: " + protocol);
+            if (protocol.equals("http")) {
+                performHttpRequests();
+            } else {
+                performTcpRequests();
+            }
+
+            pingButton.setText("Please wait...");
         }
     }
 

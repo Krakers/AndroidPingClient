@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 
@@ -62,8 +63,10 @@ public class MainActivity extends ActionBarActivity {
         int packetSize = getDataFromEditTextView(R.id.packet_size);
         int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
         String ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
+        Spinner intervalSpinner = (Spinner) findViewById(R.id.interval_spinner);
+        String intervalUnit = intervalSpinner.getSelectedItem().toString();
         int port = getDataFromEditTextView(R.id.port_number);
-        int timeBetweenRequests = getDataFromEditTextView(R.id.request_interval);
+        int requestInterval = getDataFromEditTextView(R.id.request_interval);
         String url;
         String protocol;
 
@@ -74,8 +77,8 @@ public class MainActivity extends ActionBarActivity {
             packetSize = 16;
         }
 
-        if (timeBetweenRequests == 0) {
-            timeBetweenRequests = 2;
+        if (requestInterval == 0) {
+            requestInterval = 2;
         }
 
         if (numberOfPackets == 0) {
@@ -98,7 +101,8 @@ public class MainActivity extends ActionBarActivity {
         intent.putExtra("port", port);
         intent.putExtra("url", url);
         intent.putExtra("protocol", protocol);
-        intent.putExtra("request_interval", timeBetweenRequests);
+        intent.putExtra("interval_unit", intervalUnit);
+        intent.putExtra("request_interval", requestInterval);
 
         startActivity(intent);
     }

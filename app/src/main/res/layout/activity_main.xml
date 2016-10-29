@@ -86,21 +86,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Time between requests (s):"
+            android:text="Interval"
             android:id="@+id/textView8"
-            android:textColor="#dedede" />
+            android:textColor="#dedede"
+            android:paddingRight="10dp" />
+
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:id="@+id/interval_spinner"
+            android:layout_weight="2"
+            android:spinnerMode="dropdown"
+            android:entries="@array/intervals"
+            android:background="#dedede" />
 
         <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:inputType="number"
             android:ems="10"
             android:id="@+id/request_interval"
-            android:layout_weight="1"
             android:textColor="#dedede"
             android:text="1"
             android:gravity="right"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:paddingLeft="10dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -212,7 +222,6 @@
         <ToggleButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New ToggleButton"
             android:id="@+id/protocol_button"
             android:textOff="HTTP"
             android:textOn="TCP" />
