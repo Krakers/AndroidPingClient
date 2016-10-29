@@ -2,22 +2,15 @@ package com.lakomy.tomasz.androidpingclient;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.provider.Settings;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.CellInfo;
-import android.telephony.CellInfoGsm;
-import android.telephony.CellLocation;
-import android.telephony.CellSignalStrengthGsm;
 import android.telephony.PhoneStateListener;
-import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
@@ -30,8 +23,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -40,28 +31,20 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.common.primitives.Longs;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 
-import java.net.Socket;
-import java.security.SecureRandom;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Timer;
-import java.util.TimerTask;
 
 
 public class PingServerActivity extends AppCompatActivity
@@ -70,6 +53,9 @@ public class PingServerActivity extends AppCompatActivity
     static public int numberOfRequests;
     static public int sumOfRequestTimes;
     static public int averageRequestTime;
+    static public double medianRequestTime;
+    static public long maxRequestTime;
+    static public long minRequestTime;
     static public long lastKnownDeltaTime;
     static public Timer timer;
     static public long timeBeforeRequest = System.currentTimeMillis();
@@ -127,6 +113,9 @@ public class PingServerActivity extends AppCompatActivity
         sumOfRequestTimes = 0;
         averageRequestTime = 0;
         lastKnownDeltaTime = 0;
+        medianRequestTime = 0;
+        maxRequestTime = 0;
+        minRequestTime = 0;
         results = new ArrayList<>();
         isInProgress = false;
         pingButton = (Button)findViewById(R.id.ping_button);
@@ -202,12 +191,27 @@ public class PingServerActivity extends AppCompatActivity
         return numberOfRequests == numberOfPackets;
     }
 
+    public static void calculateStatistics(List<Long> results) {
+        long[] resultsArray = Longs.toArray(results);
+        double[] doubleArray = new double[resultsArray.length];
+        for (int i = 0 ; i < resultsArray.length; i++)
+        {
+            doubleArray[i] = (double) resultsArray[i];
+        }
+        Median median = new Median();
+        medianRequestTime = median.evaluate(doubleArray);
+
+        maxRequestTime = Collections.max(results);
+        minRequestTime = Collections.min(results);
+    }
+
     public static void updateRequestStatistics() {
         lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
         results.add(lastKnownDeltaTime);
         sumOfRequestTimes += lastKnownDeltaTime;
         numberOfRequests++;
         averageRequestTime = sumOfRequestTimes / numberOfRequests;
+        calculateStatistics(results);
     }
 
     public void updateCurrentResults(TextView textView) {
@@ -222,6 +226,10 @@ public class PingServerActivity extends AppCompatActivity
         } else {    
             textView.setText("Sending " + numberOfPackets + " packets"
                     + "\nRequest number: #" + numberOfRequests
+                    + "\nCurrent request time: " + lastKnownDeltaTime
+                    + "\nMedian request time: " + medianRequestTime
+                    + "\nMinimum request time: " + minRequestTime
+                    + "\nMaximum request time: " + maxRequestTime
                     + "\nAverage request time: " + averageRequestTime);
         }
     }

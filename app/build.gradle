@@ -8,6 +8,7 @@ android {
         applicationId "com.lakomy.tomasz.androidpingclient"
         minSdkVersion 17
         targetSdkVersion 21
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
     }
@@ -24,11 +25,14 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.google.android.gms:play-services:7.5.0'
     compile project(':volley')
-    compile files('D:/Magisterka/AndroidPingClient/AndroidPingClient/libs/opencsv-3.8.jar')
+    compile files('libs/opencsv-3.8.jar')
+    compile files('libs/commons-math3-3.6.1.jar')
+    compile group: 'com.google.guava', name: 'guava', version: '19.0'
 }
 
 repositories {
     maven { url "https://jitpack.io" }
+    mavenCentral()
 }
 
 dependencies {
