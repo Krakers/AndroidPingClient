@@ -1,5 +1,6 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
@@ -13,7 +14,7 @@ import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
             port = 8000;
         }
 
-        //url = "http://" + ipAddress + ":" + port;
-        url = "https://thawing-castle-69711.herokuapp.com/";
+        url = "http://" + ipAddress + ":" + port;
+//        url = "https://thawing-castle-69711.herokuapp.com/";
 
         intent.putExtra("packet_size", packetSize);
         intent.putExtra("number_of_packets", numberOfPackets);

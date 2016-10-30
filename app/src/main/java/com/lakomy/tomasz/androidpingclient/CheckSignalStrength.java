@@ -1,8 +1,10 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoGsm;
@@ -24,7 +26,7 @@ import android.widget.EditText;
 
 import java.util.List;
 
-public class CheckSignalStrength extends ActionBarActivity {
+public class CheckSignalStrength extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

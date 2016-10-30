@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.lakomy.tomasz.androidpingclient"
-        minSdkVersion 17
+        minSdkVersion 21
         targetSdkVersion 21
         multiDexEnabled true
         versionCode 1

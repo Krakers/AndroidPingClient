@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +25,7 @@ import java.util.Calendar;
 
 
 
-public class ResultsActivity extends ActionBarActivity {
+public class ResultsActivity extends AppCompatActivity {
     LineChart chart;
     ArrayList<Entry> data = new ArrayList<>();
     long[] results;

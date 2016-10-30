@@ -8,6 +8,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
@@ -48,7 +49,7 @@ import java.util.Map;
 import java.util.Timer;
 
 
-public class PingServerActivity extends AppCompatActivity
+public class PingServerActivity extends FragmentActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     static public int numberOfRequests;
@@ -77,7 +78,7 @@ public class PingServerActivity extends AppCompatActivity
     String intervalUnit;
     int port;
     int requestInterval;
-    boolean isInProgress;
+    static public boolean isInProgress;
     Button pingButton;
     TelephonyManager telephonyManager;
     PingPhoneStateListener pingPhoneStateListener;
@@ -164,7 +165,7 @@ public class PingServerActivity extends AppCompatActivity
         isInProgress = false;
     }
 
-    protected void cancelTransmission() {
+    public static void cancelTransmission() {
         isInProgress = false;
         if (timer != null) {
             timer.cancel();
@@ -360,10 +361,16 @@ public class PingServerActivity extends AppCompatActivity
     public void pingServer(final View view) {
         if (!isInProgress) {
             resetResults();
-            if (protocol.equals("http")) {
-                performHttpRequests();
-            } else {
-                performTcpRequests();
+            switch (protocol) {
+                case "HTTP":
+                    performHttpRequests();
+                    break;
+                case "TCP":
+                    performTcpRequests();
+                    break;
+                case "UDP":
+                    Log.d("aping", "TODO: Implement UDP requests");
+                    break;
             }
 
             pingButton.setText("Please wait...");

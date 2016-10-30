@@ -29,10 +29,6 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
         textView = txtView;
     }
 
-    public String getResponse() {
-        return response;
-    }
-
     @Override
     protected Void doInBackground(Void... arg0) {
         Socket socket = null;
@@ -45,11 +41,13 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
             PrintWriter out = new PrintWriter(new BufferedWriter(
                     new OutputStreamWriter(socket.getOutputStream())), true);
 
-            // Set packet size on the server side:
-            out.println("PACKET_SIZE:" + packetSize);
-
             // Store time before request:
             PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
+
+            if (PingServerActivity.numberOfRequests == 0) {
+                // Set packet size on the server side in a first request
+                out.println("PACKET_SIZE:" + packetSize);
+            }
 
             // Send data:
             out.println(str);
@@ -74,6 +72,7 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
         } finally {
             if(socket != null){
                 try {
+                    Log.d("aping", "Closing TCP socket on client side");
                     socket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -92,12 +91,13 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
         if (shouldCancelNextRequest()) {
             textView.setText("Measurement finished!\n" +
                     "Average request time: " + PingServerActivity.averageRequestTime);
-            PingServerActivity.timer.cancel();
+            PingServerActivity.cancelTransmission();
         } else {
             textView.setText("Sending " + PingServerActivity.numberOfPackets + " packets"
                     + "\nRequest number: #" + PingServerActivity.numberOfRequests
                     + "\nAverage request time: " + PingServerActivity.averageRequestTime);
         }
+        textView.setText(textView.getText() + response);
     }
 
     @Override

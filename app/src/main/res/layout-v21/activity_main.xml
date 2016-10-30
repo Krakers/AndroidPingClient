@@ -7,8 +7,7 @@
     android:orientation="horizontal"
     android:background="#4b4b4b"
     android:clickable="false"
-    style="@android:style/Theme.Material.Light"
-    tools:targetApi="lollipop">
+    style="@android:style/Theme.Material">
 
     <Button
         android:layout_width="wrap_content"
@@ -61,7 +60,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Packet size (bytes):"
             android:id="@+id/textView2"
-            android:textColor="#dedede" />
+            android:textColor="#BAC2C6" />
 
         <EditText
             android:layout_width="wrap_content"
@@ -169,7 +168,7 @@
             android:layout_weight="1"
             android:textColor="#dedede"
             android:textStyle="bold"
-            android:text="2"
+            android:text="10"
             android:gravity="right" />
     </LinearLayout>
 
