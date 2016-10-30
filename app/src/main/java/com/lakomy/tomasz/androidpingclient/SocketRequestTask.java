@@ -8,7 +8,6 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -20,6 +19,9 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
     String response = "";
     int packetSize;
     TextView textView;
+    Socket socket;
+    RandomDataGenerator generator;
+    PrintWriter outputStream;
 
     SocketRequestTask(String addr, int port, int pSize, TextView txtView) {
         Log.d("aping", "SocketRequestTask: " + addr + " port:" + port);
@@ -27,84 +29,93 @@ class SocketRequestTask extends AsyncTask<Void, Void, Void> {
         dstPort = port;
         packetSize = pSize;
         textView = txtView;
+        generator = new RandomDataGenerator();
+
+    }
+
+    protected void closeSocket() {
+        if(socket != null){
+            try {
+                // We're closing the socket only if the request interval is higher than a minute:
+//                if (PingServerActivity.requestInterval > 60 * 1000) {
+                    Log.d("aping", "Closing TCP socket on client side");
+                    socket.close();
+//                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected void sendData() {
+        String str = generator.generateRandomData(packetSize);
+        str = str.trim();
+
+        // Store time before request:
+        PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
+
+        if (PingServerActivity.numberOfRequests == 0) {
+            // Set packet size on the server side in a first request
+            outputStream.println("PACKET_SIZE:" + packetSize);
+        }
+
+        // Send data:
+        outputStream.println(str);
+    }
+
+    protected void receiveData() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(packetSize);
+        byte[] buffer = new byte[packetSize];
+
+        int bytesRead;
+        InputStream inputStream = socket.getInputStream();
+
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+            response += byteArrayOutputStream.toString("UTF-8");
+        }
+        Log.d("aping", "Received data: " + response);
+    }
+
+    @Override
+    protected void onProgressUpdate(Void... values) {
+        super.onProgressUpdate(values);
+        PingServerActivity.updateRequestStatistics();
+        PingServerActivity.updateCurrentResults(textView);
     }
 
     @Override
     protected Void doInBackground(Void... arg0) {
-        Socket socket = null;
-
         try {
             socket = new Socket(dstAddress, dstPort);
-            RandomDataGenerator generator = new RandomDataGenerator();
-            String str = generator.generateRandomData(packetSize);
-            str = str.trim();
-            PrintWriter out = new PrintWriter(new BufferedWriter(
+            outputStream = new PrintWriter(new BufferedWriter(
                     new OutputStreamWriter(socket.getOutputStream())), true);
 
-            // Store time before request:
-            PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
+            while (!PingServerActivity.shouldCancelNextRequest()) {
+                if (socket.isClosed()) {
+                    socket = new Socket(dstAddress, dstPort);
+                    outputStream = new PrintWriter(new BufferedWriter(
+                            new OutputStreamWriter(socket.getOutputStream())), true);
+                }
 
-            if (PingServerActivity.numberOfRequests == 0) {
-                // Set packet size on the server side in a first request
-                out.println("PACKET_SIZE:" + packetSize);
-            }
+                Thread.sleep(PingServerActivity.requestInterval);
 
-            // Send data:
-            out.println(str);
-
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(packetSize);
-            byte[] buffer = new byte[packetSize];
-
-            int bytesRead;
-            InputStream inputStream = socket.getInputStream();
-
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                byteArrayOutputStream.write(buffer, 0, bytesRead);
-                response += byteArrayOutputStream.toString("UTF-8");
+                sendData();
+                receiveData();
+                publishProgress();
+                closeSocket();
             }
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
-            response = "UnknownHostException: " + e.toString();
+            Log.d("aping", "UnknownHostException: " + e.toString());
         } catch (IOException e) {
             e.printStackTrace();
-            response = "IOException: " + e.toString();
-        } finally {
-            if(socket != null){
-                try {
-                    Log.d("aping", "Closing TCP socket on client side");
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            Log.d("aping", "IOException: " + e.toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         return null;
-    }
-
-    private boolean shouldCancelNextRequest() {
-        return PingServerActivity.numberOfRequests == PingServerActivity.numberOfPackets;
-    }
-
-    private void updateCurrentResults(TextView textView) {
-        if (shouldCancelNextRequest()) {
-            textView.setText("Measurement finished!\n" +
-                    "Average request time: " + PingServerActivity.averageRequestTime);
-            PingServerActivity.cancelTransmission();
-        } else {
-            textView.setText("Sending " + PingServerActivity.numberOfPackets + " packets"
-                    + "\nRequest number: #" + PingServerActivity.numberOfRequests
-                    + "\nAverage request time: " + PingServerActivity.averageRequestTime);
-        }
-        textView.setText(textView.getText() + response);
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        super.onPostExecute(result);
-        Log.d("aping", "Received data: " + response);
-        PingServerActivity.updateRequestStatistics();
-        updateCurrentResults(textView);
     }
 }

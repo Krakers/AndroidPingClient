@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
         }
 
         if (ipAddress.isEmpty() || port == 0) {
-            ipAddress = "192.168.0.10";
+            ipAddress = "192.168.0.19";
             port = 8000;
         }
 

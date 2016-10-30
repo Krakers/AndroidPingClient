@@ -18,6 +18,7 @@ class RequestTask extends TimerTask {
     int portNumber;
     int packetSize;
     TextView textView;
+    SocketRequestTask tcpRequest;
 
     public RequestTask(String addr, int port, int pSize, TextView txtView) {
         type = "tcp";

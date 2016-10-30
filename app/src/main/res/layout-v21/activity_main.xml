@@ -60,7 +60,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Packet size (bytes):"
             android:id="@+id/textView2"
-            android:textColor="#BAC2C6" />
+            android:textColor="#dedede" />
 
         <EditText
             android:layout_width="wrap_content"
@@ -168,7 +168,7 @@
             android:layout_weight="1"
             android:textColor="#dedede"
             android:textStyle="bold"
-            android:text="10"
+            android:text="2"
             android:gravity="right" />
     </LinearLayout>
 

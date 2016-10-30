@@ -1,7 +1,9 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,7 +27,7 @@ import java.util.Calendar;
 
 
 
-public class ResultsActivity extends AppCompatActivity {
+public class ResultsActivity extends FragmentActivity {
     LineChart chart;
     ArrayList<Entry> data = new ArrayList<>();
     long[] results;

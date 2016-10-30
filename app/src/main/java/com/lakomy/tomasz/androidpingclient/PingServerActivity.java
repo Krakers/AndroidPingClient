@@ -77,10 +77,10 @@ public class PingServerActivity extends FragmentActivity
     String ipAddress;
     String intervalUnit;
     int port;
-    int requestInterval;
+    static public int requestInterval;
     static public boolean isInProgress;
-    Button pingButton;
-    TelephonyManager telephonyManager;
+    static Button pingButton;
+    static TelephonyManager telephonyManager;
     PingPhoneStateListener pingPhoneStateListener;
 
     @Override
@@ -203,7 +203,7 @@ public class PingServerActivity extends FragmentActivity
         }
     }
 
-    public boolean shouldCancelNextRequest() {
+    public static boolean shouldCancelNextRequest() {
         return numberOfRequests == numberOfPackets;
     }
 
@@ -237,7 +237,7 @@ public class PingServerActivity extends FragmentActivity
         calculateStatistics(results);
     }
 
-    public void updateCurrentResults(TextView textView) {
+    public static void updateCurrentResults(TextView textView) {
         getCurrentNetworkData();
         if (shouldCancelNextRequest()) {
             textView.setText("Measurement finished!\n" +
@@ -263,7 +263,7 @@ public class PingServerActivity extends FragmentActivity
         }
     }
 
-    public String getCurrentNetworkType() {
+    public static String getCurrentNetworkType() {
         int networkType = telephonyManager.getNetworkType();
         switch (networkType) {
             case TelephonyManager.NETWORK_TYPE_1xRTT: return "1xRTT";
@@ -286,7 +286,7 @@ public class PingServerActivity extends FragmentActivity
         return "Unknown network";
     }
 
-    public void getCurrentNetworkData() {
+    public static void getCurrentNetworkData() {
         currentNetworkType =  getCurrentNetworkType();
 
         List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
@@ -353,9 +353,9 @@ public class PingServerActivity extends FragmentActivity
 
     public void performTcpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
-        RequestTask task = new RequestTask(ipAddress, port, packetSize, mTextView);
         isInProgress = true;
-        timer.scheduleAtFixedRate(task, 0, requestInterval);
+        SocketRequestTask tcpRequest = new SocketRequestTask(ipAddress, port, packetSize, mTextView);
+        tcpRequest.execute();
     }
 
     public void pingServer(final View view) {
