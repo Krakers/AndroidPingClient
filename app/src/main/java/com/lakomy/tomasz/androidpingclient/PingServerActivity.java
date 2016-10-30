@@ -61,7 +61,7 @@ public class PingServerActivity extends AppCompatActivity
     static public long lastKnownDeltaTime;
     static public String currentNetworkType;
     static public Timer timer;
-    static public long timeBeforeRequest = System.currentTimeMillis();
+    static public long timeBeforeRequest;
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
     private double currentLatitude;
@@ -85,23 +85,9 @@ public class PingServerActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            packetSize = extras.getInt("packet_size", 16);
-            numberOfPackets = extras.getInt("number_of_packets", 10);
-            url = extras.getString("url");
-            ipAddress = extras.getString("ip_address");
-            port = extras.getInt("port", 10);
-            protocol = extras.getString("protocol");
-            intervalUnit = extras.getString("interval_unit");
-            requestInterval = extras.getInt("request_interval", 10);
-        }
+        getExtras();
+        resetResults();
 
-        Log.d("aping", "packetSize: " + packetSize);
-        Log.d("aping", "numberOfPackets: " + numberOfPackets);
-        Log.d("aping", "url: " + url);
-        Log.d("aping", "ip_address: " + ipAddress);
-        Log.d("aping", "port: " + port);
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
         setRequestInterval();
@@ -112,7 +98,7 @@ public class PingServerActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
-        resetResults();
+
         pingButton = (Button)findViewById(R.id.ping_button);
         telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -145,12 +131,24 @@ public class PingServerActivity extends AppCompatActivity
 
     @Override
     protected void onResume() {
-        final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
         super.onResume();
         setUpMapIfNeeded();
 
-        pingInfo.setText("\n\n\nPress START MEASURING to begin!");
         pingButton.setText("START MEASURING");
+    }
+
+    protected void getExtras () {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            packetSize = extras.getInt("packet_size", 16);
+            numberOfPackets = extras.getInt("number_of_packets", 10);
+            url = extras.getString("url");
+            ipAddress = extras.getString("ip_address");
+            port = extras.getInt("port", 10);
+            protocol = extras.getString("protocol");
+            intervalUnit = extras.getString("interval_unit");
+            requestInterval = extras.getInt("request_interval", 10);
+        }
     }
 
     protected void resetResults() {
@@ -167,7 +165,7 @@ public class PingServerActivity extends AppCompatActivity
     }
 
     protected void cancelTransmission() {
-        resetResults();
+        isInProgress = false;
         if (timer != null) {
             timer.cancel();
             timer.purge();
@@ -176,19 +174,14 @@ public class PingServerActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_ping_server, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
             startActivity(intent);
@@ -246,7 +239,6 @@ public class PingServerActivity extends AppCompatActivity
     public void updateCurrentResults(TextView textView) {
         getCurrentNetworkData();
         if (shouldCancelNextRequest()) {
-            pingButton.setText("Please wait...");
             textView.setText("Measurement finished!\n" +
                     "\nMedian request time: \t" + medianRequestTime
                     + "\nQuartile deviation: \t" + quartileDeviation
@@ -256,7 +248,8 @@ public class PingServerActivity extends AppCompatActivity
             pingButton.setText("Start measuring");
             isInProgress = false;
             timer.cancel();
-        } else {    
+        } else {
+            pingButton.setText("Please wait...");
             textView.setText("Sending " + numberOfPackets + " packets"
                     + "\nCurrent network: \t" + currentNetworkType
                     + "\nRequest number: \t#" + numberOfRequests
@@ -287,7 +280,7 @@ public class PingServerActivity extends AppCompatActivity
             case TelephonyManager.NETWORK_TYPE_IDEN: return "iDen";
             case TelephonyManager.NETWORK_TYPE_LTE: return "LTE";
             case TelephonyManager.NETWORK_TYPE_UMTS: return "UMTS";
-            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown";
+            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown network";
         }
         return "Unknown network";
     }
@@ -315,34 +308,35 @@ public class PingServerActivity extends AppCompatActivity
 
     public void performHttpRequests() {
         final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
+        final Map<String, String> params = new HashMap<>();
+        final RandomDataGenerator generator = new RandomDataGenerator();
+        final Calendar calendar = Calendar.getInstance();
 
         final Response.Listener successHandler = new Response.Listener<String>() {
 
             @Override
             public void onResponse(String response) {
-                updateRequestStatistics();
-                updateCurrentResults(pingInfo);
+            updateRequestStatistics();
+            updateCurrentResults(pingInfo);
             }
         };
 
         final Response.ErrorListener errorHandler = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                pingInfo.setText("That didn't work!" + error.toString());
+            pingInfo.setText("That didn't work!" + error.toString());
             }
         };
 
         // Request a string response from the provided URL.
         final CustomStringRequest stringRequest = new CustomStringRequest(url, successHandler, errorHandler)
         {
+
             protected Map<String, String> getParams()
             {
-                Map<String, String> params = new HashMap<>();
-                RandomDataGenerator generator = new RandomDataGenerator();
-
                 String data = generator.generateRandomData(packetSize);
                 params.put("data", data);
-                params.put("timestamp", "" + Calendar.getInstance().getTimeInMillis());
+                params.put("timestamp", "" + calendar.getTimeInMillis());
                 return params;
             }
         };
@@ -351,21 +345,21 @@ public class PingServerActivity extends AppCompatActivity
         stringRequest.setShouldCache(false);
         RequestTask task = new RequestTask(stringRequest, queue);
 
-        // Add the request to the RequestQueue.
         isInProgress = true;
-        timer.scheduleAtFixedRate(task, new Date(), requestInterval);
+        // Add the request to the RequestQueue.
+        timer.scheduleAtFixedRate(task, 0, requestInterval);
     }
 
     public void performTcpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
         RequestTask task = new RequestTask(ipAddress, port, packetSize, mTextView);
         isInProgress = true;
-        timer.scheduleAtFixedRate(task, new Date(), requestInterval);
+        timer.scheduleAtFixedRate(task, 0, requestInterval);
     }
 
     public void pingServer(final View view) {
         if (!isInProgress) {
-            Log.d("tlakomy", "scheduling measurement with protocol: " + protocol);
+            resetResults();
             if (protocol.equals("http")) {
                 performHttpRequests();
             } else {
@@ -486,7 +480,9 @@ public class PingServerActivity extends AppCompatActivity
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
-                updateCamera(location.getLatitude(), location.getLongitude(), false);
+                if (isInProgress) {
+                    updateCamera(location.getLatitude(), location.getLongitude(), false);
+                }
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {}

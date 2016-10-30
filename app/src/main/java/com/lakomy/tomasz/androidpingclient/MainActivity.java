@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,7 +13,7 @@ import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,13 +65,14 @@ public class MainActivity extends ActionBarActivity {
         int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
         String ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
         Spinner intervalSpinner = (Spinner) findViewById(R.id.interval_spinner);
+        Spinner protocolSpinner = (Spinner)findViewById(R.id.protocol_spinner);
         String intervalUnit = intervalSpinner.getSelectedItem().toString();
+        String protocol = protocolSpinner.getSelectedItem().toString();
+
         int port = getDataFromEditTextView(R.id.port_number);
         int requestInterval = getDataFromEditTextView(R.id.request_interval);
         String url;
-        String protocol;
 
-        ToggleButton protocolButton = (ToggleButton)findViewById(R.id.protocol_button);
 
         // Set default values:
         if (packetSize == 0) {
@@ -89,8 +91,6 @@ public class MainActivity extends ActionBarActivity {
             ipAddress = "192.168.0.10";
             port = 8000;
         }
-
-        protocol = protocolButton.isChecked() ? "tcp" : "http";
 
         //url = "http://" + ipAddress + ":" + port;
         url = "https://thawing-castle-69711.herokuapp.com/";

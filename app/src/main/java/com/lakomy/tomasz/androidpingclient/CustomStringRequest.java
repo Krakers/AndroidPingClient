@@ -5,7 +5,7 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.StringRequest;
 
 public class CustomStringRequest extends StringRequest {
-    private Priority priority = Priority.LOW;
+    private Priority priority = Priority.IMMEDIATE;
 
     CustomStringRequest(String url, Response.Listener successHandler, Response.ErrorListener errorListener) {
         super(Request.Method.POST, url, successHandler, errorListener);
