@@ -2,7 +2,6 @@ package com.lakomy.tomasz.androidpingclient;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,11 +15,9 @@ import com.opencsv.CSVWriter;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Calendar;
 
 
@@ -28,7 +25,7 @@ import java.util.Calendar;
 public class ResultsActivity extends ActionBarActivity {
     LineChart chart;
     ArrayList<Entry> data = new ArrayList<>();
-    long[] results;
+    long[] averages;
     Bundle extras;
 
     @Override
@@ -44,12 +41,12 @@ public class ResultsActivity extends ActionBarActivity {
         chart = (LineChart) findViewById(R.id.chart);
 
         if (extras != null) {
-            results = extras.getLongArray("results");
+            averages = extras.getLongArray("averages");
         }
 
 
-        for (int i = 0; i < results.length; i++) {
-            Entry entry = new Entry(results[i], i);
+        for (int i = 0; i < averages.length; i++) {
+            Entry entry = new Entry(averages[i], i);
             data.add(entry);
             xVals.add("Packet " + i);
         }
@@ -64,7 +61,7 @@ public class ResultsActivity extends ActionBarActivity {
     }
 
     public void saveResults(final View view) {
-        Log.d("aping", "Save results");
+        Log.d("aping", "Save averages");
         int packetSize = extras.getInt("packet_size", 16);
         int numberOfPackets = extras.getInt("numberOfPackets", 10);
         String protocol = extras.getString("protocol");
@@ -82,15 +79,15 @@ public class ResultsActivity extends ActionBarActivity {
 
         try {
             writer = new CSVWriter(new FileWriter(filePath));
-            String[] resultsArray = new String[results.length + 6];
-            resultsArray[0] = "Measurement results:";
+            String[] resultsArray = new String[averages.length + 6];
+            resultsArray[0] = "Measurement averages:";
             resultsArray[1] = "Protocol: " + protocol;
             resultsArray[2] = "Packet size: " + packetSize;
             resultsArray[3] = "Number of packets: " + numberOfPackets;
             resultsArray[4] = "Request interval: " + requestInterval;
             resultsArray[5] = "Average request time: " + averageRequestTime;
-            for(int i = 1; i < results.length; i++){
-                resultsArray[i + 6] = String.valueOf(results[i]);
+            for(int i = 1; i < averages.length; i++){
+                resultsArray[i + 6] = String.valueOf(averages[i]);
             }
 
             writer.writeNext(resultsArray);

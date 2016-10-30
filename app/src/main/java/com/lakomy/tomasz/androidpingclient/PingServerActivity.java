@@ -35,6 +35,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.primitives.Longs;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 import java.util.ArrayList;
@@ -52,11 +53,13 @@ public class PingServerActivity extends AppCompatActivity
 
     static public int numberOfRequests;
     static public int sumOfRequestTimes;
-    static public int averageRequestTime;
+    static public double averageRequestTime;
     static public double medianRequestTime;
+    static public double quartileDeviation;
     static public long maxRequestTime;
     static public long minRequestTime;
     static public long lastKnownDeltaTime;
+    static public String currentNetworkType;
     static public Timer timer;
     static public long timeBeforeRequest = System.currentTimeMillis();
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
@@ -64,7 +67,7 @@ public class PingServerActivity extends AppCompatActivity
     private double currentLatitude;
     private double currentLongitude;
     RequestQueue queue;
-    static public List<Long> results;
+    static public List<Long> averages;
 
     int packetSize;
     static public int numberOfPackets;
@@ -114,9 +117,10 @@ public class PingServerActivity extends AppCompatActivity
         averageRequestTime = 0;
         lastKnownDeltaTime = 0;
         medianRequestTime = 0;
+        quartileDeviation = 0;
         maxRequestTime = 0;
         minRequestTime = 0;
-        results = new ArrayList<>();
+        averages = new ArrayList<>();
         isInProgress = false;
         pingButton = (Button)findViewById(R.id.ping_button);
         telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
@@ -191,27 +195,34 @@ public class PingServerActivity extends AppCompatActivity
         return numberOfRequests == numberOfPackets;
     }
 
+    public static void calculateQuartileDeviation(double[] results) {
+        DescriptiveStatistics da = new DescriptiveStatistics(results);
+        quartileDeviation = (da.getPercentile(75) - da.getPercentile(25)) / 2;
+    }
+
     public static void calculateStatistics(List<Long> results) {
         long[] resultsArray = Longs.toArray(results);
-        double[] doubleArray = new double[resultsArray.length];
+        double[] resultsDoubleArray = new double[resultsArray.length];
         for (int i = 0 ; i < resultsArray.length; i++)
         {
-            doubleArray[i] = (double) resultsArray[i];
+            resultsDoubleArray[i] = (double) resultsArray[i];
         }
+
         Median median = new Median();
-        medianRequestTime = median.evaluate(doubleArray);
+        medianRequestTime = median.evaluate(resultsDoubleArray);
 
         maxRequestTime = Collections.max(results);
         minRequestTime = Collections.min(results);
+        calculateQuartileDeviation(resultsDoubleArray);
     }
 
     public static void updateRequestStatistics() {
         lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
-        results.add(lastKnownDeltaTime);
+        averages.add(lastKnownDeltaTime);
         sumOfRequestTimes += lastKnownDeltaTime;
         numberOfRequests++;
         averageRequestTime = sumOfRequestTimes / numberOfRequests;
-        calculateStatistics(results);
+        calculateStatistics(averages);
     }
 
     public void updateCurrentResults(TextView textView) {
@@ -219,22 +230,53 @@ public class PingServerActivity extends AppCompatActivity
         if (shouldCancelNextRequest()) {
             pingButton.setText("Please wait...");
             textView.setText("Measurement finished!\n" +
-                    "Average request time: " + averageRequestTime);
+                    "\nMedian request time: \t" + medianRequestTime
+                    + "\nQuartile deviation: \t" + quartileDeviation
+                    + "\nMinimum request time: \t" + minRequestTime
+                    + "\nMaximum request time: \t" + maxRequestTime
+                    + "\nAverage request time: \t" + averageRequestTime);
             pingButton.setText("Start measuring");
             isInProgress = false;
             timer.cancel();
         } else {    
             textView.setText("Sending " + numberOfPackets + " packets"
-                    + "\nRequest number: #" + numberOfRequests
-                    + "\nCurrent request time: " + lastKnownDeltaTime
-                    + "\nMedian request time: " + medianRequestTime
-                    + "\nMinimum request time: " + minRequestTime
-                    + "\nMaximum request time: " + maxRequestTime
-                    + "\nAverage request time: " + averageRequestTime);
+                    + "\nCurrent network: \t" + currentNetworkType
+                    + "\nRequest number: \t#" + numberOfRequests
+                    + "\nCurrent request time: \t" + lastKnownDeltaTime
+                    + "\nMedian request time: \t" + medianRequestTime
+                    + "\nQuartile deviation: \t" + quartileDeviation
+                    + "\nMinimum request time: \t" + minRequestTime
+                    + "\nMaximum request time: \t" + maxRequestTime
+                    + "\nAverage request time: \t" + averageRequestTime);
         }
     }
 
+    public String getCurrentNetworkType() {
+        int networkType = telephonyManager.getNetworkType();
+        switch (networkType) {
+            case TelephonyManager.NETWORK_TYPE_1xRTT: return "1xRTT";
+            case TelephonyManager.NETWORK_TYPE_CDMA: return "CDMA";
+            case TelephonyManager.NETWORK_TYPE_EDGE: return "EDGE";
+            case TelephonyManager.NETWORK_TYPE_EHRPD: return "eHRPD";
+            case TelephonyManager.NETWORK_TYPE_EVDO_0: return "EVDO rev. 0";
+            case TelephonyManager.NETWORK_TYPE_EVDO_A: return "EVDO rev. A";
+            case TelephonyManager.NETWORK_TYPE_EVDO_B: return "EVDO rev. B";
+            case TelephonyManager.NETWORK_TYPE_GPRS: return "GPRS";
+            case TelephonyManager.NETWORK_TYPE_HSDPA: return "HSDPA";
+            case TelephonyManager.NETWORK_TYPE_HSPA: return "HSPA";
+            case TelephonyManager.NETWORK_TYPE_HSPAP: return "HSPA+";
+            case TelephonyManager.NETWORK_TYPE_HSUPA: return "HSUPA";
+            case TelephonyManager.NETWORK_TYPE_IDEN: return "iDen";
+            case TelephonyManager.NETWORK_TYPE_LTE: return "LTE";
+            case TelephonyManager.NETWORK_TYPE_UMTS: return "UMTS";
+            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown";
+        }
+        return "Unknown network";
+    }
+
     public void getCurrentNetworkData() {
+        currentNetworkType =  getCurrentNetworkType();
+
         List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
         if (allCellInfo != null) {
             Log.d("aping", allCellInfo.toString());
@@ -319,11 +361,11 @@ public class PingServerActivity extends AppCompatActivity
 
     public void showResults(View view) {
         Intent intent = new Intent(this, ResultsActivity.class);
-        long[] resultsArray = new long[results.size()];
-        for (int i = 0; i < results.size(); i++) {
-            resultsArray[i] = results.get(i);
+        long[] averagesArray = new long[averages.size()];
+        for (int i = 0; i < averages.size(); i++) {
+            averagesArray[i] = averages.get(i);
         }
-        intent.putExtra("results", resultsArray);
+        intent.putExtra("averages", averagesArray);
         intent.putExtra("protocol", protocol);
         intent.putExtra("requestInterval", requestInterval);
         intent.putExtra("packetSize", packetSize);
