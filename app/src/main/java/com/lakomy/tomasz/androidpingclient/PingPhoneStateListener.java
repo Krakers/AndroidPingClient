@@ -14,11 +14,11 @@ class PingPhoneStateListener extends PhoneStateListener {
     @Override
     public void onSignalStrengthsChanged(SignalStrength signalStrength) {
         super.onSignalStrengthsChanged(signalStrength);
-        Log.d("aping", "isGSM: " + signalStrength.isGsm());
-        Log.d("aping", "getCdmaDbm: " + signalStrength.getCdmaDbm() + " dBm");
-        Log.d("aping", "getEvdoDbm: " + signalStrength.getEvdoDbm() + " dBm");
-        Log.d("aping", "getGsmSignalStrength: " + signalStrength.getGsmSignalStrength() + " dBm");
-        Log.d("aping", "getGsmSignalStrength: " + signalStrength.getGsmBitErrorRate());
+//        Log.d("aping", "isGSM: " + signalStrength.isGsm());
+//        Log.d("aping", "getCdmaDbm: " + signalStrength.getCdmaDbm() + " dBm");
+//        Log.d("aping", "getEvdoDbm: " + signalStrength.getEvdoDbm() + " dBm");
+//        Log.d("aping", "getGsmSignalStrength: " + signalStrength.getGsmSignalStrength() + " dBm");
+//        Log.d("aping", "getGsmSignalStrength: " + signalStrength.getGsmBitErrorRate());
     }
 
     @Override

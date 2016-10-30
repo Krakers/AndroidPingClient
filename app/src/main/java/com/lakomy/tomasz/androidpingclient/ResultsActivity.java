@@ -1,5 +1,7 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,7 +27,7 @@ import java.util.Calendar;
 public class ResultsActivity extends ActionBarActivity {
     LineChart chart;
     ArrayList<Entry> data = new ArrayList<>();
-    long[] averages;
+    long[] results;
     Bundle extras;
 
     @Override
@@ -41,12 +43,12 @@ public class ResultsActivity extends ActionBarActivity {
         chart = (LineChart) findViewById(R.id.chart);
 
         if (extras != null) {
-            averages = extras.getLongArray("averages");
+            results = extras.getLongArray("results");
         }
 
 
-        for (int i = 0; i < averages.length; i++) {
-            Entry entry = new Entry(averages[i], i);
+        for (int i = 0; i < results.length; i++) {
+            Entry entry = new Entry(results[i], i);
             data.add(entry);
             xVals.add("Packet " + i);
         }
@@ -60,13 +62,34 @@ public class ResultsActivity extends ActionBarActivity {
         chart.setData(dataLineData);
     }
 
+    public void displaySaveResultAlert(String message) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(ResultsActivity.this);
+        builder1.setMessage(message);
+        builder1.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                }
+        );
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+    }
+
     public void saveResults(final View view) {
-        Log.d("aping", "Save averages");
-        int packetSize = extras.getInt("packet_size", 16);
-        int numberOfPackets = extras.getInt("numberOfPackets", 10);
+        Log.d("aping", "Save results");
+        int packetSize = extras.getInt("packet_size");
+        int numberOfPackets = extras.getInt("numberOfPackets");
         String protocol = extras.getString("protocol");
-        int requestInterval = extras.getInt("requestInterval", 10);
-        int averageRequestTime = extras.getInt("averageRequestTime", 10);
+        int requestInterval = extras.getInt("requestInterval");
+        double averageRequestTime = extras.getDouble("averageRequestTime");
+        double medianRequestTime = extras.getDouble("medianRequestTime");
+        long minRequestTime = extras.getLong("minRequestTime");
+        long maxRequestTime = extras.getLong("maxRequestTime");
+        double quartileDeviation = extras.getDouble("quartileDeviation");
+
         String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
         Calendar c = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
@@ -74,28 +97,36 @@ public class ResultsActivity extends ActionBarActivity {
 
         String fileName = "AnalysisData " + currentTime + ".csv";
         String filePath = baseDir + File.separator + fileName;
-        File f = new File(filePath);
+        Log.d("aping", "Saving data to" + filePath);
         CSVWriter writer;
+        String userMessage;
 
         try {
-            writer = new CSVWriter(new FileWriter(filePath));
-            String[] resultsArray = new String[averages.length + 6];
-            resultsArray[0] = "Measurement averages:";
+            writer = new CSVWriter(new FileWriter(filePath), ',');
+            String[] resultsArray = new String[results.length + 10];
+            resultsArray[0] = "Measurement results:";
             resultsArray[1] = "Protocol: " + protocol;
             resultsArray[2] = "Packet size: " + packetSize;
             resultsArray[3] = "Number of packets: " + numberOfPackets;
             resultsArray[4] = "Request interval: " + requestInterval;
             resultsArray[5] = "Average request time: " + averageRequestTime;
-            for(int i = 1; i < averages.length; i++){
-                resultsArray[i + 6] = String.valueOf(averages[i]);
+            resultsArray[6] = "Median request time: " + medianRequestTime;
+            resultsArray[7] = "Minimum request time: " + minRequestTime;
+            resultsArray[8] = "Maximum request time: " + maxRequestTime;
+            resultsArray[9] = "Quartile deviation: " + quartileDeviation;
+            for(int i = 1; i < results.length; i++){
+                resultsArray[i + 10] = String.valueOf(results[i]);
             }
 
             writer.writeNext(resultsArray);
             writer.close();
+            userMessage = "Results saved to " + filePath;
 
         } catch (IOException e) {
             Log.d("aping", "Save failed");
+            userMessage = "Saving results failed!";
         }
+        displaySaveResultAlert(userMessage);
     }
 
     @Override

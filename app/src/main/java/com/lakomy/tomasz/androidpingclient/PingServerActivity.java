@@ -67,7 +67,7 @@ public class PingServerActivity extends AppCompatActivity
     private double currentLatitude;
     private double currentLongitude;
     RequestQueue queue;
-    static public List<Long> averages;
+    static public List<Long> results;
 
     int packetSize;
     static public int numberOfPackets;
@@ -112,16 +112,7 @@ public class PingServerActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
-        numberOfRequests = 0;
-        sumOfRequestTimes = 0;
-        averageRequestTime = 0;
-        lastKnownDeltaTime = 0;
-        medianRequestTime = 0;
-        quartileDeviation = 0;
-        maxRequestTime = 0;
-        minRequestTime = 0;
-        averages = new ArrayList<>();
-        isInProgress = false;
+        resetResults();
         pingButton = (Button)findViewById(R.id.ping_button);
         telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -143,17 +134,44 @@ public class PingServerActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        isInProgress = false;
-        if (timer != null) {
-            timer.cancel();
-            timer.purge();
-        }
+        cancelTransmission();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        cancelTransmission();
     }
 
     @Override
     protected void onResume() {
+        final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
         super.onResume();
         setUpMapIfNeeded();
+
+        pingInfo.setText("\n\n\nPress START MEASURING to begin!");
+        pingButton.setText("START MEASURING");
+    }
+
+    protected void resetResults() {
+        numberOfRequests = 0;
+        sumOfRequestTimes = 0;
+        averageRequestTime = 0;
+        lastKnownDeltaTime = 0;
+        medianRequestTime = 0;
+        quartileDeviation = 0;
+        maxRequestTime = 0;
+        minRequestTime = 0;
+        results = new ArrayList<>();
+        isInProgress = false;
+    }
+
+    protected void cancelTransmission() {
+        resetResults();
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
     }
 
     @Override
@@ -218,11 +236,11 @@ public class PingServerActivity extends AppCompatActivity
 
     public static void updateRequestStatistics() {
         lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
-        averages.add(lastKnownDeltaTime);
+        results.add(lastKnownDeltaTime);
         sumOfRequestTimes += lastKnownDeltaTime;
         numberOfRequests++;
         averageRequestTime = sumOfRequestTimes / numberOfRequests;
-        calculateStatistics(averages);
+        calculateStatistics(results);
     }
 
     public void updateCurrentResults(TextView textView) {
@@ -296,21 +314,21 @@ public class PingServerActivity extends AppCompatActivity
     }
 
     public void performHttpRequests() {
-        final TextView mTextView = (TextView) findViewById(R.id.ping_info);
+        final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
 
         final Response.Listener successHandler = new Response.Listener<String>() {
 
             @Override
             public void onResponse(String response) {
                 updateRequestStatistics();
-                updateCurrentResults(mTextView);
+                updateCurrentResults(pingInfo);
             }
         };
 
         final Response.ErrorListener errorHandler = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                mTextView.setText("That didn't work!" + error.toString());
+                pingInfo.setText("That didn't work!" + error.toString());
             }
         };
 
@@ -347,7 +365,7 @@ public class PingServerActivity extends AppCompatActivity
 
     public void pingServer(final View view) {
         if (!isInProgress) {
-            Log.d("aping", "protocol: " + protocol);
+            Log.d("tlakomy", "scheduling measurement with protocol: " + protocol);
             if (protocol.equals("http")) {
                 performHttpRequests();
             } else {
@@ -360,18 +378,24 @@ public class PingServerActivity extends AppCompatActivity
 
 
     public void showResults(View view) {
-        Intent intent = new Intent(this, ResultsActivity.class);
-        long[] averagesArray = new long[averages.size()];
-        for (int i = 0; i < averages.size(); i++) {
-            averagesArray[i] = averages.get(i);
+        if (!isInProgress) {
+            Intent intent = new Intent(this, ResultsActivity.class);
+            long[] resultsArray = new long[results.size()];
+            for (int i = 0; i < results.size(); i++) {
+                resultsArray[i] = results.get(i);
+            }
+            intent.putExtra("results", resultsArray);
+            intent.putExtra("protocol", protocol);
+            intent.putExtra("requestInterval", requestInterval);
+            intent.putExtra("packetSize", packetSize);
+            intent.putExtra("numberOfPackets", numberOfPackets);
+            intent.putExtra("averageRequestTime", averageRequestTime);
+            intent.putExtra("medianRequestTime", medianRequestTime);
+            intent.putExtra("minRequestTime", minRequestTime);
+            intent.putExtra("maxRequestTime", maxRequestTime);
+            intent.putExtra("quartileDeviation", quartileDeviation);
+            startActivity(intent);
         }
-        intent.putExtra("averages", averagesArray);
-        intent.putExtra("protocol", protocol);
-        intent.putExtra("requestInterval", requestInterval);
-        intent.putExtra("packetSize", packetSize);
-        intent.putExtra("numberOfPackets", numberOfPackets);
-        intent.putExtra("averageRequestTime", averageRequestTime);
-        startActivity(intent);
     }
 
 
