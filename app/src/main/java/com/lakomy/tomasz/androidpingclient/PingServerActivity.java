@@ -9,7 +9,6 @@ import android.location.LocationManager;
 import android.provider.Settings;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AppCompatActivity;
 import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -42,7 +41,6 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -354,7 +352,7 @@ public class PingServerActivity extends FragmentActivity
     public void performTcpRequests() {
         final TextView mTextView = (TextView) findViewById(R.id.ping_info);
         isInProgress = true;
-        SocketRequestTask tcpRequest = new SocketRequestTask(ipAddress, port, packetSize, mTextView);
+        TcpSocketRequestTask tcpRequest = new TcpSocketRequestTask(ipAddress, port, packetSize, mTextView);
         tcpRequest.execute();
     }
 

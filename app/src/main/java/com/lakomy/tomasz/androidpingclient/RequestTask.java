@@ -3,10 +3,7 @@ package com.lakomy.tomasz.androidpingclient;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
-
-import org.w3c.dom.Text;
 
 import java.util.TimerTask;
 
@@ -18,7 +15,7 @@ class RequestTask extends TimerTask {
     int portNumber;
     int packetSize;
     TextView textView;
-    SocketRequestTask tcpRequest;
+    TcpSocketRequestTask tcpRequest;
 
     public RequestTask(String addr, int port, int pSize, TextView txtView) {
         type = "tcp";
@@ -40,7 +37,7 @@ class RequestTask extends TimerTask {
         if (type.equals("http")) {
             queue.add(request);
         } else {
-            SocketRequestTask tcpRequest = new SocketRequestTask(ipAddress, portNumber, packetSize, textView);
+            TcpSocketRequestTask tcpRequest = new TcpSocketRequestTask(ipAddress, portNumber, packetSize, textView);
             tcpRequest.execute();
         }
     }
