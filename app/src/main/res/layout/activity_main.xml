@@ -73,7 +73,8 @@
             android:textColor="#dedede"
             android:text="10"
             android:gravity="right"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:maxLength="5" />
     </LinearLayout>
 
     <LinearLayout
@@ -170,7 +171,8 @@
             android:textColor="#dedede"
             android:textStyle="bold"
             android:text="10"
-            android:gravity="right" />
+            android:gravity="right"
+            android:maxLength="6" />
     </LinearLayout>
 
     <LinearLayout

@@ -12,7 +12,6 @@ import android.support.v4.app.FragmentActivity;
 import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -91,7 +90,6 @@ public class PingServerActivity extends FragmentActivity
 
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
-        setRequestInterval();
         buildGoogleApiClient();
     }
 
@@ -192,17 +190,6 @@ public class PingServerActivity extends FragmentActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void setRequestInterval() {
-        switch (intervalUnit) {
-            case "Seconds":
-                requestInterval *= 1000;
-                break;
-            case "Minutes":
-                requestInterval *= 60000;
-                break;
-        }
-    }
-
     public static boolean shouldCancelNextRequest() {
         return numberOfRequests == numberOfPackets;
     }
@@ -289,12 +276,12 @@ public class PingServerActivity extends FragmentActivity
     public static void getCurrentNetworkData() {
         currentNetworkType =  getCurrentNetworkType();
 
-        List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
-        if (allCellInfo != null) {
-            Log.d("aping", allCellInfo.toString());
-        } else {
-            Log.d("aping", "allCellInfo is null");
-        }
+//        List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
+//        if (allCellInfo != null) {
+//            Log.d("aping", allCellInfo.toString());
+//        } else {
+//            Log.d("aping", "allCellInfo is null");
+//        }
 
 
 //        if (all != null) {

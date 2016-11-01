@@ -1,6 +1,8 @@
 package com.lakomy.tomasz.androidpingclient;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
@@ -15,10 +17,24 @@ import android.widget.ToggleButton;
 
 
 public class MainActivity extends Activity {
+    int packetSize;
+    int numberOfPackets;
+    String ipAddress;
+    Spinner intervalSpinner;
+    Spinner protocolSpinner;
+    String intervalUnit;
+    String protocol;
+
+    int port;
+    int requestInterval;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
+        intervalSpinner = (Spinner) findViewById(R.id.interval_spinner);
+        protocolSpinner = (Spinner)findViewById(R.id.protocol_spinner);
     }
 
     @Override
@@ -59,35 +75,74 @@ public class MainActivity extends Activity {
         return retVal;
     }
 
+    public void displayWrongInputAlert(String message) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setMessage(message);
+        alertDialogBuilder.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                }
+        );
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public void setRequestInterval() {
+        switch (intervalUnit) {
+            case "Seconds":
+                requestInterval *= 1000;
+                break;
+            case "Minutes":
+                requestInterval *= 60000;
+                break;
+        }
+    }
+
+    public boolean verifyInputData() {
+        boolean isInputDataCorrect = true;
+
+        if (packetSize <= 0) {
+            displayWrongInputAlert("Packet size must be greater than 0");
+            isInputDataCorrect = false;
+        }
+
+        if (packetSize > 65000) {
+            displayWrongInputAlert("Maximum packet size allowed is 65000");
+            isInputDataCorrect = false;
+        }
+
+        if (requestInterval < 500) {
+            displayWrongInputAlert("Request interval must be greater than 500ms");
+            isInputDataCorrect = false;
+        }
+
+        if (numberOfPackets <= 0) {
+            displayWrongInputAlert("Number of packets must be greater than 0");
+            isInputDataCorrect = false;
+        }
+
+        return isInputDataCorrect;
+    }
+
     /** Called when the user clicks the Send button **/
     public void sendMessage(View view) {
         Intent intent = new Intent(this, PingServerActivity.class);
-        int packetSize = getDataFromEditTextView(R.id.packet_size);
-        int numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
-        String ipAddress = ((EditText)findViewById(R.id.ip_address)).getText().toString();
-        Spinner intervalSpinner = (Spinner) findViewById(R.id.interval_spinner);
-        Spinner protocolSpinner = (Spinner)findViewById(R.id.protocol_spinner);
-        String intervalUnit = intervalSpinner.getSelectedItem().toString();
-        String protocol = protocolSpinner.getSelectedItem().toString();
-
-        int port = getDataFromEditTextView(R.id.port_number);
-        int requestInterval = getDataFromEditTextView(R.id.request_interval);
+        packetSize = getDataFromEditTextView(R.id.packet_size);
+        numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
+        intervalUnit = intervalSpinner.getSelectedItem().toString();
+        protocol = protocolSpinner.getSelectedItem().toString();
+        port = getDataFromEditTextView(R.id.port_number);
+        requestInterval = getDataFromEditTextView(R.id.request_interval);
         String url;
 
+        setRequestInterval();
+        verifyInputData();
 
-        // Set default values:
-        if (packetSize == 0) {
-            packetSize = 16;
-        }
-
-        if (requestInterval == 0) {
-            requestInterval = 2;
-        }
-
-        if (numberOfPackets == 0) {
-            numberOfPackets = 10;
-        }
-
+        // Default data, remove it later
         if (ipAddress.isEmpty() || port == 0) {
             ipAddress = "192.168.0.19";
             port = 8000;
@@ -96,16 +151,18 @@ public class MainActivity extends Activity {
         url = "http://" + ipAddress + ":" + port;
 //        url = "https://thawing-castle-69711.herokuapp.com/";
 
-        intent.putExtra("packet_size", packetSize);
-        intent.putExtra("number_of_packets", numberOfPackets);
-        intent.putExtra("ip_address", ipAddress);
-        intent.putExtra("port", port);
-        intent.putExtra("url", url);
-        intent.putExtra("protocol", protocol);
-        intent.putExtra("interval_unit", intervalUnit);
-        intent.putExtra("request_interval", requestInterval);
 
-        startActivity(intent);
+        if (verifyInputData()) {
+            intent.putExtra("packet_size", packetSize);
+            intent.putExtra("number_of_packets", numberOfPackets);
+            intent.putExtra("ip_address", ipAddress);
+            intent.putExtra("port", port);
+            intent.putExtra("url", url);
+            intent.putExtra("protocol", protocol);
+            intent.putExtra("interval_unit", intervalUnit);
+            intent.putExtra("request_interval", requestInterval);
+
+            startActivity(intent);
+        }
     }
-
 }
