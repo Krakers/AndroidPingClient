@@ -30,7 +30,6 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         packetSize = pSize;
         textView = txtView;
         generator = new RandomDataGenerator();
-
     }
 
     protected void closeSocket() {

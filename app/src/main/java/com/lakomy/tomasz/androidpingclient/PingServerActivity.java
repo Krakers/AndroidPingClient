@@ -38,6 +38,8 @@ import com.google.common.primitives.Longs;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -350,13 +352,20 @@ public class PingServerActivity extends FragmentActivity
     }
 
     public void performTcpRequests() {
-        final TextView mTextView = (TextView) findViewById(R.id.ping_info);
+        final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
         isInProgress = true;
-        TcpSocketRequestTask tcpRequest = new TcpSocketRequestTask(ipAddress, port, packetSize, mTextView);
+        TcpSocketRequestTask tcpRequest = new TcpSocketRequestTask(ipAddress, port, packetSize, pingInfo);
         tcpRequest.execute();
     }
 
-    public void pingServer(final View view) {
+    public void performUdpRequests() throws SocketException, UnknownHostException {
+        final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
+        isInProgress = true;
+        UdpSocketRequestTask udpRequest = new UdpSocketRequestTask(ipAddress, port, packetSize, pingInfo);
+        udpRequest.execute();
+    }
+
+    public void pingServer(final View view) throws SocketException, UnknownHostException {
         if (!isInProgress) {
             resetResults();
             switch (protocol) {
@@ -367,7 +376,7 @@ public class PingServerActivity extends FragmentActivity
                     performTcpRequests();
                     break;
                 case "UDP":
-                    Log.d("aping", "TODO: Implement UDP requests");
+                    performUdpRequests();
                     break;
             }
 
