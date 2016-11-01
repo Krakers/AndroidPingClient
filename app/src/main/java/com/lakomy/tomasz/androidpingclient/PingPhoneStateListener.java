@@ -21,9 +21,4 @@ class PingPhoneStateListener extends PhoneStateListener {
 //        Log.d("aping", "getGsmSignalStrength: " + signalStrength.getGsmBitErrorRate());
     }
 
-    @Override
-    public void onCellInfoChanged(List<CellInfo> cellInfo) {
-        super.onCellInfoChanged(cellInfo);
-        Log.d("aping", "CellInfo: " + cellInfo.toString());
-    }
 }

@@ -27,7 +27,7 @@ import java.util.Calendar;
 
 
 
-public class ResultsActivity extends FragmentActivity {
+public class ResultsActivity extends Activity {
     LineChart chart;
     ArrayList<Entry> data = new ArrayList<>();
     long[] results;
