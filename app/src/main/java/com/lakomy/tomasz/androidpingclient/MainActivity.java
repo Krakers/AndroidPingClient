@@ -148,8 +148,8 @@ public class MainActivity extends Activity {
             port = 8000;
         }
 
-        url = "http://" + ipAddress + ":" + port;
-//        url = "https://thawing-castle-69711.herokuapp.com/";
+//        url = "http://" + ipAddress + ":" + port;
+        url = "https://thawing-castle-69711.herokuapp.com/";
 
 
         if (verifyInputData()) {

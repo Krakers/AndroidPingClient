@@ -20,8 +20,8 @@
     </string-array>
 
     <string-array name="protocols">
-        <item>UDP</item>
-        <item>TCP</item>
         <item>HTTP</item>
+        <item>TCP</item>
+        <item>UDP</item>
     </string-array>
 </resources>

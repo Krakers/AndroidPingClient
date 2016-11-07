@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentActivity;
 import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -296,45 +297,11 @@ public class PingServerActivity extends FragmentActivity
 
     public void performHttpRequests() {
         final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
-        final Map<String, String> params = new HashMap<>();
-        final RandomDataGenerator generator = new RandomDataGenerator();
-        final Calendar calendar = Calendar.getInstance();
-
-        final Response.Listener successHandler = new Response.Listener<String>() {
-
-            @Override
-            public void onResponse(String response) {
-            updateRequestStatistics();
-            updateCurrentResults(pingInfo);
-            }
-        };
-
-        final Response.ErrorListener errorHandler = new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-            pingInfo.setText("That didn't work!" + error.toString());
-            }
-        };
-
-        // Request a string response from the provided URL.
-        final CustomStringRequest stringRequest = new CustomStringRequest(url, successHandler, errorHandler)
-        {
-
-            protected Map<String, String> getParams()
-            {
-                String data = generator.generateRandomData(packetSize);
-                params.put("data", data);
-                params.put("timestamp", "" + calendar.getTimeInMillis());
-                return params;
-            }
-        };
-
-        stringRequest.setPriority(Request.Priority.IMMEDIATE);
-        stringRequest.setShouldCache(false);
-        RequestTask task = new RequestTask(stringRequest, queue);
+        Log.d("aping", "Creating a http request task: " + url);
+        HttpRequestTask httpRequestTask = new HttpRequestTask(url, packetSize, pingInfo);
+        RequestTask task = new RequestTask(httpRequestTask.getStringRequest(), queue);
 
         isInProgress = true;
-        // Add the request to the RequestQueue.
         timer.scheduleAtFixedRate(task, 0, requestInterval);
     }
 
@@ -392,6 +359,7 @@ public class PingServerActivity extends FragmentActivity
             startActivity(intent);
         }
     }
+
 
 
     /**
