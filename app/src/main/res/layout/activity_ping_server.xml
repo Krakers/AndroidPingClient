@@ -11,7 +11,7 @@
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-        android:layout_height="250dp" android:id="@+id/map"
+        android:layout_height="240dp" android:id="@+id/map"
         tools:context="com.lakomy.tomasz.androidpingclient.PingServerActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_alignParentTop="true" />
@@ -26,9 +26,9 @@
         android:height="75dp"
         android:textColor="#ffffff"
         android:textSize="20dp"
-        android:layout_below="@+id/map"
         android:layout_alignParentStart="true"
-        android:text="\n\n\nPress START MEASURING to begin!" />
+        android:text="\n\n\n\nPress START MEASURING to begin!"
+        android:layout_below="@+id/map" />
 
     <LinearLayout
         android:orientation="horizontal"
