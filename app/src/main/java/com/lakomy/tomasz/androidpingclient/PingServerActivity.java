@@ -9,20 +9,15 @@ import android.location.LocationManager;
 import android.provider.Settings;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -41,11 +36,8 @@ import org.apache.commons.math3.stat.descriptive.rank.Median;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 
 
@@ -54,13 +46,13 @@ public class PingServerActivity extends FragmentActivity
 
     static public int numberOfRequests;
     static public int sumOfRequestTimes;
-    static public int signalStrength;
     static public double averageRequestTime;
     static public double medianRequestTime;
     static public double quartileDeviation;
     static public long maxRequestTime;
     static public long minRequestTime;
     static public long lastKnownDeltaTime;
+    static public long signalStrength;
     static public String currentNetworkType;
     static public Timer timer;
     static public long timeBeforeRequest;
@@ -69,7 +61,8 @@ public class PingServerActivity extends FragmentActivity
     private double currentLatitude;
     private double currentLongitude;
     RequestQueue queue;
-    static public List<Long> results;
+    static public List<Long> pingTimes;
+    static public List<Long> signalStrengths;
 
     int packetSize;
     static public int numberOfPackets;
@@ -161,7 +154,8 @@ public class PingServerActivity extends FragmentActivity
         quartileDeviation = 0;
         maxRequestTime = 0;
         minRequestTime = 0;
-        results = new ArrayList<>();
+        pingTimes = new ArrayList<>();
+        signalStrengths = new ArrayList<>();
         isInProgress = false;
     }
 
@@ -219,11 +213,12 @@ public class PingServerActivity extends FragmentActivity
 
     public static void updateRequestStatistics() {
         lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
-        results.add(lastKnownDeltaTime);
+        pingTimes.add(lastKnownDeltaTime);
+        signalStrengths.add(signalStrength);
         sumOfRequestTimes += lastKnownDeltaTime;
         numberOfRequests++;
         averageRequestTime = sumOfRequestTimes / numberOfRequests;
-        calculateStatistics(results);
+        calculateStatistics(pingTimes);
     }
 
     public static void updateCurrentResults(TextView textView) {
@@ -243,7 +238,7 @@ public class PingServerActivity extends FragmentActivity
             textView.setText("Sending " + numberOfPackets + " packets"
                     + "\nCurrent network: \t" + currentNetworkType
                     + "\nRequest number: \t#" + numberOfRequests
-                    + "\nCurrent signal strength: \t" + signalStrength + " dbM"
+                    + "\nCurrent signal strength: \t" + signalStrength + " dBm"
                     + "\nCurrent request time: \t" + lastKnownDeltaTime
                     + "\nMedian request time: \t" + medianRequestTime
                     + "\nQuartile deviation: \t" + quartileDeviation
@@ -271,24 +266,7 @@ public class PingServerActivity extends FragmentActivity
     }
 
     public static void getCurrentNetworkData() {
-        currentNetworkType =  getCurrentNetworkType();
-
-//        List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
-//        if (allCellInfo != null) {
-//            Log.d("aping", allCellInfo.toString());
-//        } else {
-//            Log.d("aping", "allCellInfo is null");
-//        }
-
-
-//        if (all != null) {
-//            CellInfoGsm cellinfogsm = (CellInfoGsm) all.get(0);
-//            CellSignalStrengthGsm cellSignalStrengthGsm = cellinfogsm.getCellSignalStrength();
-//
-//            int strengthDbm = cellSignalStrengthGsm.getDbm();
-//            TextView strength = (TextView) findViewById(R.id.signal_info);
-//            strength.setText(strengthDbm + "dBm ");
-//        }
+        currentNetworkType = getCurrentNetworkType();
     }
 
     public void performHttpRequests() {
@@ -333,15 +311,13 @@ public class PingServerActivity extends FragmentActivity
         }
     }
 
-
     public void showResults(View view) {
         if (!isInProgress) {
             Intent intent = new Intent(this, ResultsActivity.class);
-            long[] resultsArray = new long[results.size()];
-            for (int i = 0; i < results.size(); i++) {
-                resultsArray[i] = results.get(i);
-            }
-            intent.putExtra("results", resultsArray);
+            long[] pingTimesArray = Longs.toArray(pingTimes);
+            long[] signalStrengthsArray = Longs.toArray(signalStrengths);
+            intent.putExtra("pingTimes", pingTimesArray);
+            intent.putExtra("signalStrengths", signalStrengthsArray);
             intent.putExtra("protocol", protocol);
             intent.putExtra("requestInterval", requestInterval);
             intent.putExtra("packetSize", packetSize);

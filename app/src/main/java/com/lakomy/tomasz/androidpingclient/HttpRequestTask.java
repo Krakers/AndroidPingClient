@@ -47,7 +47,7 @@ public class HttpRequestTask extends FragmentActivity {
             protected Map<String, String> getParams()
             {
                 String data = generator.generateRandomData(packetSize);
-                params.put("data", data);
+                params.put("pingTimesEntries", data);
                 params.put("timestamp", "" + calendar.getTimeInMillis());
                 return params;
             }

@@ -13,7 +13,5 @@ class PingPhoneStateListener extends PhoneStateListener {
 
         PingServerActivity.signalStrength =
                 gsmSignalStrength != 99 ? -113 + 2 * gsmSignalStrength : -120;
-
     }
-
 }

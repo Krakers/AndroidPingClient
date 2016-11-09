@@ -58,8 +58,8 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
             outputStream.println("PACKET_SIZE:" + packetSize);
         }
 
-        // Send data:
-        Log.d("aping", "Sending data: " + str);
+        // Send pingTimesEntries:
+        Log.d("aping", "Sending pingTimesEntries: " + str);
         outputStream.println(str);
     }
 
@@ -76,7 +76,7 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
             response += byteArrayOutputStream.toString("UTF-8");
         }
         publishProgress();
-        Log.d("aping", "Received data: " + response);
+        Log.d("aping", "Received pingTimesEntries: " + response);
     }
 
     @Override

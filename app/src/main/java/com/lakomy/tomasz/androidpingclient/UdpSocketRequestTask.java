@@ -43,7 +43,7 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         // Store time before request:
         PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
 
-        Log.d("aping", "Sending data through UDP: " + message);
+        Log.d("aping", "Sending pingTimesEntries through UDP: " + message);
         datagramSocket.send(senderPacket);
     }
 
@@ -54,7 +54,7 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         // Receive the UDP-Packet
         datagramSocket.receive(receiverPacket);
         publishProgress();
-        Log.d("aping", "Received data through UDP: " + new String(receiverPacket.getData()));
+        Log.d("aping", "Received pingTimesEntries through UDP: " + new String(receiverPacket.getData()));
     }
 
     @Override

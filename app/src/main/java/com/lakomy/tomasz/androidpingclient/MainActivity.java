@@ -142,7 +142,7 @@ public class MainActivity extends Activity {
         setRequestInterval();
         verifyInputData();
 
-        // Default data, remove it later
+        // Default pingTimesEntries, remove it later
         if (ipAddress.isEmpty() || port == 0) {
             ipAddress = "192.168.0.19";
             port = 8000;
