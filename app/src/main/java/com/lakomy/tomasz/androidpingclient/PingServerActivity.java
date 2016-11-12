@@ -34,6 +34,7 @@ import com.google.common.primitives.Longs;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -65,16 +66,17 @@ public class PingServerActivity extends FragmentActivity
     static public List<Long> pingTimes;
     static public List<Long> signalStrengths;
 
-    int packetSize;
+    static int packetSize;
     static public int numberOfPackets;
     String url;
-    String protocol;
+    static String protocol;
     String ipAddress;
     String intervalUnit;
     int port;
     static public int requestInterval;
     static public boolean isInProgress;
     static Button pingButton;
+    static ResultsSaver resultsSaver;
     static TelephonyManager telephonyManager;
     PingPhoneStateListener pingPhoneStateListener;
 
@@ -213,7 +215,12 @@ public class PingServerActivity extends FragmentActivity
         calculateQuartileDeviation(resultsDoubleArray);
     }
 
-    public static void updateRequestStatistics() {
+    public static void appendCurrentResultsToFile() throws IOException {
+        resultsSaver.setExtras(createShowResultsBundle());
+        resultsSaver.addCurrentResultsToFile();
+    }
+
+    public static void updateRequestStatistics() throws IOException {
         lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
         pingTimes.add(lastKnownDeltaTime);
         signalStrengths.add(signalStrength);
@@ -221,6 +228,7 @@ public class PingServerActivity extends FragmentActivity
         numberOfRequests++;
         averageRequestTime = sumOfRequestTimes / numberOfRequests;
         calculateStatistics(pingTimes);
+        appendCurrentResultsToFile();
     }
 
     public static void updateCurrentResults(TextView textView) {
@@ -295,6 +303,8 @@ public class PingServerActivity extends FragmentActivity
 
     public void pingServer(final View view) throws SocketException, UnknownHostException {
         Log.d("aping", "current protocol: " + protocol);
+        resultsSaver = new ResultsSaver(createShowResultsBundle());
+        resultsSaver.createFilePath();
         if (!isInProgress) {
             resetResults();
             switch (protocol) {
@@ -312,22 +322,35 @@ public class PingServerActivity extends FragmentActivity
         }
     }
 
+    public static Bundle createShowResultsBundle() {
+        Bundle bundle = new Bundle();
+        long[] pingTimesArray = Longs.toArray(pingTimes);
+        long[] signalStrengthsArray = Longs.toArray(signalStrengths);
+        bundle.putLongArray("pingTimes", pingTimesArray);
+        bundle.putLongArray("signalStrengths", signalStrengthsArray);
+        bundle.putString("protocol", protocol);
+        bundle.putInt("requestInterval", requestInterval);
+        bundle.putInt("packetSize", packetSize);
+        bundle.putInt("numberOfPackets", numberOfPackets);
+        bundle.putDouble("averageRequestTime", averageRequestTime);
+        bundle.putDouble("medianRequestTime", medianRequestTime);
+        bundle.putLong("minRequestTime", minRequestTime);
+        bundle.putLong("maxRequestTime", maxRequestTime);
+        bundle.putDouble("quartileDeviation", quartileDeviation);
+
+        return bundle;
+    }
+
+    Intent createShowResultsIntent() {
+        Intent intent = new Intent(this, ResultsActivity.class);
+        intent.putExtras(createShowResultsBundle());
+
+        return intent;
+    }
+
     public void showResults(View view) {
         if (!isInProgress) {
-            Intent intent = new Intent(this, ResultsActivity.class);
-            long[] pingTimesArray = Longs.toArray(pingTimes);
-            long[] signalStrengthsArray = Longs.toArray(signalStrengths);
-            intent.putExtra("pingTimes", pingTimesArray);
-            intent.putExtra("signalStrengths", signalStrengthsArray);
-            intent.putExtra("protocol", protocol);
-            intent.putExtra("requestInterval", requestInterval);
-            intent.putExtra("packetSize", packetSize);
-            intent.putExtra("numberOfPackets", numberOfPackets);
-            intent.putExtra("averageRequestTime", averageRequestTime);
-            intent.putExtra("medianRequestTime", medianRequestTime);
-            intent.putExtra("minRequestTime", minRequestTime);
-            intent.putExtra("maxRequestTime", maxRequestTime);
-            intent.putExtra("quartileDeviation", quartileDeviation);
+            Intent intent = createShowResultsIntent();
             startActivity(intent);
         }
     }

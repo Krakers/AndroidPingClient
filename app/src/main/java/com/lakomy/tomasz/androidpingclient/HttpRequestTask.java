@@ -9,6 +9,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class HttpRequestTask extends FragmentActivity {
 
     final Response.Listener successHandler = new Response.Listener<String>() {
         @Override
-        public void onResponse(String response) {
+        public void onResponse(String response) throws IOException {
             PingServerActivity.updateRequestStatistics();
             PingServerActivity.updateCurrentResults(pingInfo);
         }

@@ -91,62 +91,12 @@ public class ResultsActivity extends Activity {
         alert11.show();
     }
 
-    public void saveResults(final View view) {
-        int packetSize = extras.getInt("packet_size");
-        int numberOfPackets = extras.getInt("numberOfPackets");
-        String protocol = extras.getString("protocol");
-        int requestInterval = extras.getInt("requestInterval");
-        double averageRequestTime = extras.getDouble("averageRequestTime");
-        double medianRequestTime = extras.getDouble("medianRequestTime");
-        long minRequestTime = extras.getLong("minRequestTime");
-        long maxRequestTime = extras.getLong("maxRequestTime");
-        double quartileDeviation = extras.getDouble("quartileDeviation");
-
-        String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
-        String currentTime = sdf.format(c.getTime());
-
-        String fileName = "AnalysisData " + currentTime + ".csv";
-        String filePath = baseDir + File.separator + fileName;
-        String[] statisticsArray = new String[9];
-        String[] pingResultsArray = new String[pingTimes.length + 1];
-        String[] signalStrengthsArray = new String[signalStrengths.length + 1];
-        CSVWriter writer;
-        String userMessage;
-
-        try {
-            writer = new CSVWriter(new FileWriter(filePath), ',');
-            statisticsArray[0] = "Protocol: " + protocol;
-            statisticsArray[1] = " Packet size: " + packetSize;
-            statisticsArray[2] = " Number of packets: " + numberOfPackets;
-            statisticsArray[3] = " Request interval: " + requestInterval;
-            statisticsArray[4] = " Average request time: " + averageRequestTime;
-            statisticsArray[5] = " Median request time: " + medianRequestTime;
-            statisticsArray[6] = " Minimum request time: " + minRequestTime;
-            statisticsArray[7] = " Maximum request time: " + maxRequestTime;
-            statisticsArray[8] = " Quartile deviation: " + quartileDeviation;
-
-            pingResultsArray[0] = "Response time results: ";
-            for(int i = 1; i < pingTimes.length; i++){
-                pingResultsArray[i + 1] = String.valueOf(pingTimes[i]);
-            }
-
-            signalStrengthsArray[0] = "Signal strengths results: ";
-            for(int i = 1; i < signalStrengths.length; i++){
-                signalStrengthsArray[i + 1] = String.valueOf(signalStrengths[i]);
-            }
-
-            writer.writeNext(statisticsArray, false);
-            writer.writeNext(pingResultsArray, false);
-            writer.writeNext(signalStrengthsArray, false);
-            writer.close();
-            userMessage = "Results saved to " + filePath;
-
-        } catch (IOException e) {
-            Log.d("aping", "Save failed");
-            userMessage = "Saving response times failed!";
-        }
+    public void saveResults(final View view) throws IOException {
+        ResultsSaver resultsSaver = new ResultsSaver(extras);
+        boolean saveSuccessful = resultsSaver.saveAllResultsToNewFile();
+        String userMessage = saveSuccessful ?
+                "Results saved to " + resultsSaver.getFilePath() :
+                "Saving results failed!";
         displaySaveResultAlert(userMessage);
     }
 

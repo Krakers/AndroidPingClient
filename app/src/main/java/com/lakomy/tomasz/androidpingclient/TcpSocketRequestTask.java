@@ -82,7 +82,11 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
-        PingServerActivity.updateRequestStatistics();
+        try {
+            PingServerActivity.updateRequestStatistics();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         PingServerActivity.updateCurrentResults(textView);
     }
 
