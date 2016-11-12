@@ -48,7 +48,7 @@ public class ResultsSaver {
     public void createFilePath() {
         String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
         String currentTime = simpleDateFormat.format(calendar.getTime());
-        fileName = "AnalysisData " + currentTime + ".csv";
+        fileName = "AndroidPingData " + currentTime + ".csv";
 
         filePath = baseDir + File.separator + fileName;
     }

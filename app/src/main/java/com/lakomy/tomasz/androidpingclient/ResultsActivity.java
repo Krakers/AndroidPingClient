@@ -87,8 +87,8 @@ public class ResultsActivity extends Activity {
                 }
         );
 
-        AlertDialog alert11 = builder1.create();
-        alert11.show();
+        AlertDialog alertDialog = builder1.create();
+        alertDialog.show();
     }
 
     public void saveResults(final View view) throws IOException {

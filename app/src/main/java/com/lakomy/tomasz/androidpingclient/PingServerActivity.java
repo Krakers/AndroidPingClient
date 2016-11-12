@@ -1,7 +1,10 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -34,10 +37,16 @@ import com.google.common.primitives.Longs;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
@@ -180,6 +189,22 @@ public class PingServerActivity extends FragmentActivity
         pingTimes = new ArrayList<>();
         signalStrengths = new ArrayList<>();
         isInProgress = false;
+    }
+
+    public void displayAlert(String message) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(PingServerActivity.this);
+        builder1.setMessage(message);
+        builder1.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                }
+        );
+
+        AlertDialog alertDialog = builder1.create();
+        alertDialog.show();
     }
 
     public static void cancelTransmission() {
@@ -399,6 +424,43 @@ public class PingServerActivity extends FragmentActivity
         }
     }
 
+    public void captureScreen(final View view)
+    {
+        GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback()
+        {
+
+            @Override
+            public void onSnapshotReady(Bitmap snapshot)
+            {
+                try
+                {
+                    Calendar calendar = Calendar.getInstance();
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
+                    String currentTime = simpleDateFormat.format(calendar.getTime());
+                    String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+                    String filePath = baseDir + File.separator
+                            + "AndroidPingMap" + currentTime
+                            + ".png";
+                    FileOutputStream outputStream = new FileOutputStream(filePath);
+                    snapshot.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+                    displayAlert("Screenshot saved to " + filePath);
+                }
+                catch (FileNotFoundException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        mMap.snapshot(callback);
+    }
+
     @Override
     public void onConnectionSuspended(int cause) {
         Log.d("aping", "Google maps - onConnectionSuspended");
@@ -461,4 +523,5 @@ public class PingServerActivity extends FragmentActivity
 
         locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
     }
+
 }
