@@ -32,7 +32,7 @@ public class HttpRequestTask extends FragmentActivity {
     final Response.ErrorListener errorHandler = new Response.ErrorListener() {
         @Override
         public void onErrorResponse(VolleyError error) {
-            pingInfo.setText("Http request error: " + error.toString());
+            pingInfo.setText("HTTP request error: " + error.toString());
         }
     };
 

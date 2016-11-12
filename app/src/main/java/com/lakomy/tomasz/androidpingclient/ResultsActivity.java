@@ -37,6 +37,7 @@ public class ResultsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results);
+        getActionBar().setDisplayHomeAsUpEnabled(false);
         extras = getIntent().getExtras();
         setUpChart();
     }

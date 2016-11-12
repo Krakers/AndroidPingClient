@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -82,6 +83,7 @@ public class PingServerActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         getExtras();
         resetResults();
+        getActionBar().setDisplayHomeAsUpEnabled(false);
 
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
@@ -131,6 +133,25 @@ public class PingServerActivity extends FragmentActivity
         pingButton.setText("START MEASURING");
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_ping_server, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     protected void getExtras () {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -165,25 +186,6 @@ public class PingServerActivity extends FragmentActivity
             timer.cancel();
             timer.purge();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_ping_server, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            final Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public static boolean shouldCancelNextRequest() {
@@ -235,10 +237,9 @@ public class PingServerActivity extends FragmentActivity
             timer.cancel();
         } else {
             pingButton.setText("Please wait...");
-            textView.setText("Sending " + numberOfPackets + " packets"
-                    + "\nCurrent network: \t" + currentNetworkType
-                    + "\nRequest number: \t#" + numberOfRequests
-                    + "\nCurrent signal strength: \t" + signalStrength + " dBm"
+            textView.setText("Sending packet " + numberOfRequests +
+                    " out of " + numberOfPackets + " packets"
+                    + "\nCurrent network: \t" + currentNetworkType + " (" + signalStrength + " dBm)"
                     + "\nCurrent request time: \t" + lastKnownDeltaTime
                     + "\nMedian request time: \t" + medianRequestTime
                     + "\nQuartile deviation: \t" + quartileDeviation
@@ -260,7 +261,7 @@ public class PingServerActivity extends FragmentActivity
             case TelephonyManager.NETWORK_TYPE_HSUPA: return "HSUPA";
             case TelephonyManager.NETWORK_TYPE_LTE: return "LTE";
             case TelephonyManager.NETWORK_TYPE_UMTS: return "UMTS";
-            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown network";
+            case TelephonyManager.NETWORK_TYPE_UNKNOWN: return "Unknown";
         }
         return "Unknown network";
     }
@@ -293,6 +294,7 @@ public class PingServerActivity extends FragmentActivity
     }
 
     public void pingServer(final View view) throws SocketException, UnknownHostException {
+        Log.d("aping", "current protocol: " + protocol);
         if (!isInProgress) {
             resetResults();
             switch (protocol) {
@@ -306,7 +308,6 @@ public class PingServerActivity extends FragmentActivity
                     performUdpRequests();
                     break;
             }
-
             pingButton.setText("Please wait...");
         }
     }
@@ -377,6 +378,7 @@ public class PingServerActivity extends FragmentActivity
 
     @Override
     public void onConnectionSuspended(int cause) {
+        Log.d("aping", "Google maps - onConnectionSuspended");
         // The connection has been interrupted.
         // Disable any UI components that depend on Google APIs
         // until onConnected() is called.
@@ -384,6 +386,7 @@ public class PingServerActivity extends FragmentActivity
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
+        Log.d("aping", "Google maps - onConnectionFailed");
         // This callback is important for handling errors that
         // may occur while attempting to connect with Google.
         //
