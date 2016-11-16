@@ -73,6 +73,8 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         try
         {
             while (!PingServerActivity.shouldCancelNextRequest()) {
+                Log.d("aping", "udp ip: " + ipAddress);
+                Log.d("aping", "udp port: " + dstPort);
                 sendData();
                 receiveData();
                 Thread.sleep(PingServerActivity.requestInterval);

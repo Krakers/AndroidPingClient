@@ -1,6 +1,8 @@
 package com.lakomy.tomasz.androidpingclient;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -84,10 +86,12 @@ public class PingServerActivity extends FragmentActivity
     int port;
     static public int requestInterval;
     static public boolean isInProgress;
+    static public boolean isInBackground;
     static Button pingButton;
     static ResultsSaver resultsSaver;
     static TelephonyManager telephonyManager;
     PingPhoneStateListener pingPhoneStateListener;
+    MemoryBoss mMemoryBoss;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +99,8 @@ public class PingServerActivity extends FragmentActivity
         getExtras();
         resetResults();
         getActionBar().setDisplayHomeAsUpEnabled(false);
+        mMemoryBoss = new MemoryBoss();
+        registerComponentCallbacks(mMemoryBoss);
 
         setContentView(R.layout.activity_ping_server);
         setUpMapIfNeeded();
@@ -104,6 +110,7 @@ public class PingServerActivity extends FragmentActivity
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d("aping - lifecycle", "onStart");
         mGoogleApiClient.connect();
 
         pingButton = (Button)findViewById(R.id.ping_button);
@@ -127,18 +134,21 @@ public class PingServerActivity extends FragmentActivity
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d("aping - lifecycle", "onPause");
         cancelTransmission();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d("aping - lifecycle", "onStop");
         cancelTransmission();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d("aping - lifecycle", "onResume");
         setUpMapIfNeeded();
 
         pingButton.setText("START MEASURING");
@@ -213,6 +223,10 @@ public class PingServerActivity extends FragmentActivity
             timer.cancel();
             timer.purge();
         }
+    }
+
+    public static void restartTransmission() {
+        isInProgress = true;
     }
 
     public static boolean shouldCancelNextRequest() {
