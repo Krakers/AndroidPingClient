@@ -1,8 +1,6 @@
 package com.lakomy.tomasz.androidpingclient;
 
-import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -40,10 +38,8 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -51,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
 
 
 public class PingServerActivity extends FragmentActivity
@@ -67,7 +62,6 @@ public class PingServerActivity extends FragmentActivity
     static public long lastKnownDeltaTime;
     static public long signalStrength;
     static public String currentNetworkType;
-    static public Timer timer;
     static public long timeBeforeRequest;
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
@@ -86,7 +80,6 @@ public class PingServerActivity extends FragmentActivity
     int port;
     static public int requestInterval;
     static public boolean isInProgress;
-    static public boolean isInBackground;
     static Button pingButton;
     static ResultsSaver resultsSaver;
     static TelephonyManager telephonyManager;
@@ -118,7 +111,6 @@ public class PingServerActivity extends FragmentActivity
 
         queue = Volley.newRequestQueue(this);
         queue.start();
-        timer = new Timer();
         pingPhoneStateListener = new PingPhoneStateListener();
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(pingPhoneStateListener, PhoneStateListener.LISTEN_CALL_FORWARDING_INDICATOR |
@@ -219,10 +211,6 @@ public class PingServerActivity extends FragmentActivity
 
     public static void cancelTransmission() {
         isInProgress = false;
-        if (timer != null) {
-            timer.cancel();
-            timer.purge();
-        }
     }
 
     public static void restartTransmission() {
@@ -230,7 +218,7 @@ public class PingServerActivity extends FragmentActivity
     }
 
     public static boolean shouldCancelNextRequest() {
-        return numberOfRequests == numberOfPackets;
+        return numberOfRequests == numberOfPackets || !isInProgress;
     }
 
     public static void calculateQuartileDeviation(double[] results) {
@@ -281,7 +269,6 @@ public class PingServerActivity extends FragmentActivity
                     + "\nAverage request time: \t" + averageRequestTime);
             pingButton.setText("Start measuring");
             isInProgress = false;
-            timer.cancel();
         } else {
             pingButton.setText("Please wait...");
             textView.setText("Sending packet " + numberOfRequests +
@@ -319,11 +306,9 @@ public class PingServerActivity extends FragmentActivity
 
     public void performHttpRequests() {
         final TextView pingInfo = (TextView) findViewById(R.id.ping_info);
-        HttpRequestTask httpRequestTask = new HttpRequestTask(url, packetSize, pingInfo);
-        RequestTask task = new RequestTask(httpRequestTask.getStringRequest(), queue);
-
         isInProgress = true;
-        timer.scheduleAtFixedRate(task, 0, requestInterval);
+        HttpRequestTask httpRequestTask = new HttpRequestTask(url, packetSize, queue, pingInfo);
+        httpRequestTask.execute();
     }
 
     public void performTcpRequests() {
@@ -460,12 +445,7 @@ public class PingServerActivity extends FragmentActivity
                     outputStream.flush();
                     outputStream.close();
                     displayAlert("Screenshot saved to " + filePath);
-                }
-                catch (FileNotFoundException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (IOException e)
+                } catch (IOException e)
                 {
                     e.printStackTrace();
                 }

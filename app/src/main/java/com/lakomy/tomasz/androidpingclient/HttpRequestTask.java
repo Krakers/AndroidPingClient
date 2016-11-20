@@ -1,11 +1,10 @@
 package com.lakomy.tomasz.androidpingclient;
 
-import android.app.Activity;
-import android.support.v4.app.FragmentActivity;
-import android.util.Log;
+import android.os.AsyncTask;
 import android.widget.TextView;
 
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
@@ -14,13 +13,14 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpRequestTask extends FragmentActivity {
+public class HttpRequestTask extends AsyncTask<Void, Void, Void> {
     final Map<String, String> params = new HashMap<>();
     final RandomDataGenerator generator = new RandomDataGenerator();
     final Calendar calendar = Calendar.getInstance();
     TextView pingInfo;
     String url;
     int packetSize;
+    RequestQueue queue;
 
     final Response.Listener successHandler = new Response.Listener<String>() {
         @Override
@@ -37,10 +37,11 @@ public class HttpRequestTask extends FragmentActivity {
         }
     };
 
-    HttpRequestTask(String urlAddr, int pSize, TextView pInfo) {
+    HttpRequestTask(String urlAddr, int pSize, RequestQueue requestQueue, TextView pInfo) {
         pingInfo = pInfo;
         url = urlAddr;
         packetSize = pSize;
+        queue = requestQueue;
     }
 
     public CustomStringRequest getStringRequest() {
@@ -48,7 +49,7 @@ public class HttpRequestTask extends FragmentActivity {
             protected Map<String, String> getParams()
             {
                 String data = generator.generateRandomData(packetSize);
-                params.put("pingTimesEntries", data);
+                params.put("data", data);
                 params.put("timestamp", "" + calendar.getTimeInMillis());
                 return params;
             }
@@ -56,5 +57,23 @@ public class HttpRequestTask extends FragmentActivity {
         stringRequest.setPriority(Request.Priority.IMMEDIATE);
         stringRequest.setShouldCache(false);
         return stringRequest;
+    }
+
+    public void sendHttpRequest() {
+        PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
+        queue.add(getStringRequest());
+    }
+
+    @Override
+    protected Void doInBackground(Void... params) {
+        while (!PingServerActivity.shouldCancelNextRequest()) {
+            sendHttpRequest();
+            try {
+                Thread.sleep(PingServerActivity.requestInterval);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }
