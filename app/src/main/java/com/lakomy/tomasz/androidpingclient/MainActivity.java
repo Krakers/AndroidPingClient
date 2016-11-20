@@ -111,6 +111,11 @@ public class MainActivity extends Activity {
             isInputDataCorrect = false;
         }
 
+        if (packetSize <= 20 && protocol.equals("TCP")) {
+            displayWrongInputAlert("TCP packet size must be greater than 20 bytes");
+            isInputDataCorrect = false;
+        }
+
         if (packetSize > 65000) {
             displayWrongInputAlert("Maximum packet size allowed is 65000");
             isInputDataCorrect = false;
@@ -139,6 +144,8 @@ public class MainActivity extends Activity {
         port = getDataFromEditTextView(R.id.port_number);
         requestInterval = getDataFromEditTextView(R.id.request_interval);
         String url;
+
+        Log.d("aping", "Current protocol: " + protocol);
 
         setRequestInterval();
         verifyInputData();

@@ -79,6 +79,20 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         Log.d("aping", "Received pingTimesEntries: " + response);
     }
 
+    protected void resetPacketSize() throws IOException {
+        if (PingServerActivity.shouldCancelNextRequest()) {
+            // Reset PACKET_SIZE on server-side
+            if (socket.isClosed()) {
+                socket = new Socket(dstAddress, dstPort);
+                outputStream = new PrintWriter(new BufferedWriter(
+                        new OutputStreamWriter(socket.getOutputStream())), true);
+            }
+            Log.d("aping", "Resetting PACKET_SIZE");
+            outputStream.println("PACKET_SIZE:" + 65000);
+            closeSocket();
+        }
+    }
+
     @Override
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
@@ -109,6 +123,8 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
                 receiveData();
                 closeSocket();
             }
+
+            resetPacketSize();
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
