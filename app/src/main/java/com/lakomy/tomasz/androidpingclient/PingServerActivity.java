@@ -103,7 +103,6 @@ public class PingServerActivity extends FragmentActivity
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("aping - lifecycle", "onStart");
         mGoogleApiClient.connect();
 
         pingButton = (Button)findViewById(R.id.ping_button);
@@ -126,21 +125,18 @@ public class PingServerActivity extends FragmentActivity
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d("aping - lifecycle", "onPause");
         cancelTransmission();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("aping - lifecycle", "onStop");
         cancelTransmission();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("aping - lifecycle", "onResume");
         setUpMapIfNeeded();
 
         pingButton.setText("START MEASURING");

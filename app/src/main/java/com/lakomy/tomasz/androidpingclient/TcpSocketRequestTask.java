@@ -22,6 +22,8 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
     Socket socket;
     RandomDataGenerator generator;
     PrintWriter outputStream;
+    String inputString;
+    boolean closeClientSocketAfterEachRequest;
 
     TcpSocketRequestTask(String addr, int port, int pSize, TextView txtView) {
         Log.d("aping", "TcpSocketRequestTask: " + addr + " port:" + port);
@@ -30,25 +32,35 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         packetSize = pSize;
         textView = txtView;
         generator = new RandomDataGenerator();
+        closeClientSocketAfterEachRequest = PingServerActivity.requestInterval > 60 * 1000;
     }
 
-    protected void closeSocket() {
+    protected void closeClientSocketIfNeeded() {
         if(socket != null){
             try {
                 // We're closing the socket only if the request interval is higher than a minute:
-//                if (PingServerActivity.requestInterval > 60 * 1000) {
+                if (closeClientSocketAfterEachRequest) {
                     Log.d("aping", "Closing TCP socket on client side");
                     socket.close();
-//                }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    protected void closeServerSocketIfNeeded() throws IOException {
+        reopenSocketIfNeeded();
+        if (closeClientSocketAfterEachRequest) {
+            Log.d("aping", "Closing server side socket");
+            outputStream.println("CLOSE_SOCKET");
+        }
+        closeClientSocketIfNeeded();
+    }
+
     protected void sendData() {
-        String str = generator.generateRandomData(packetSize);
-        str = str.trim();
+        inputString = generator.generateRandomData(packetSize);
+        inputString = inputString.trim();
 
         // Store time before request:
         PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
@@ -59,8 +71,8 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         }
 
         // Send pingTimesEntries:
-        Log.d("aping", "Sending pingTimesEntries: " + str);
-        outputStream.println(str);
+        Log.d("aping", "Sending pingTimesEntries: " + inputString);
+        outputStream.println(inputString);
     }
 
     protected void receiveData() throws IOException {
@@ -74,22 +86,29 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         while ((bytesRead = inputStream.read(buffer)) != -1) {
             byteArrayOutputStream.write(buffer, 0, bytesRead);
             response += byteArrayOutputStream.toString("UTF-8");
+
+            if (response.length() == inputString.length()) {
+                break;
+            }
         }
         publishProgress();
         Log.d("aping", "Received pingTimesEntries: " + response);
     }
 
+    protected void reopenSocketIfNeeded() throws IOException {
+        if (socket.isClosed()) {
+            socket = new Socket(dstAddress, dstPort);
+            outputStream = new PrintWriter(new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream())), true);
+        }
+    }
+
     protected void resetPacketSize() throws IOException {
         if (PingServerActivity.shouldCancelNextRequest()) {
-            // Reset PACKET_SIZE on server-side
-            if (socket.isClosed()) {
-                socket = new Socket(dstAddress, dstPort);
-                outputStream = new PrintWriter(new BufferedWriter(
-                        new OutputStreamWriter(socket.getOutputStream())), true);
-            }
-            Log.d("aping", "Resetting PACKET_SIZE");
+            reopenSocketIfNeeded();
             outputStream.println("PACKET_SIZE:" + 65000);
-            closeSocket();
+            outputStream.println("CLOSE_SOCKET");
+            closeClientSocketIfNeeded();
         }
     }
 
@@ -112,16 +131,12 @@ class TcpSocketRequestTask extends AsyncTask<Void, Void, Void> {
                     new OutputStreamWriter(socket.getOutputStream())), true);
 
             while (!PingServerActivity.shouldCancelNextRequest()) {
-                if (socket.isClosed()) {
-                    socket = new Socket(dstAddress, dstPort);
-                    outputStream = new PrintWriter(new BufferedWriter(
-                            new OutputStreamWriter(socket.getOutputStream())), true);
-                }
-
-                Thread.sleep(PingServerActivity.requestInterval);
+                reopenSocketIfNeeded();
                 sendData();
                 receiveData();
-                closeSocket();
+                closeServerSocketIfNeeded();
+                closeClientSocketIfNeeded();
+                Thread.sleep(PingServerActivity.requestInterval);
             }
 
             resetPacketSize();
