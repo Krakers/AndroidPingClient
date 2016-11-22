@@ -25,6 +25,8 @@ public class ResultsSaver {
     double quartileDeviation;
     long[] pingTimes;
     long[] signalStrengths;
+    float[] longitudes;
+    float[] latitudes;
     String filePath;
     CSVWriter writer;
     Calendar calendar;
@@ -92,6 +94,8 @@ public class ResultsSaver {
         quartileDeviation = extras.getDouble("quartileDeviation");
         pingTimes = extras.getLongArray("pingTimes");
         signalStrengths = extras.getLongArray("signalStrengths");
+        longitudes = extras.getFloatArray("longitudes");
+        latitudes = extras.getFloatArray("latitudes");
     }
 
     void writeDataToFile() {
@@ -99,6 +103,8 @@ public class ResultsSaver {
         String[] statisticsArray = new String[9];
         String[] pingResultsArray = new String[pingTimes.length + 1];
         String[] signalStrengthsArray = new String[signalStrengths.length + 1];
+        String[] longitudesArray = new String[longitudes.length + 1];
+        String[] latitudesArray = new String[latitudes.length + 1];
 
         try {
             statisticsArray[0] = "Protocol: " + protocol;
@@ -121,9 +127,21 @@ public class ResultsSaver {
                 signalStrengthsArray[i + 1] = String.valueOf(signalStrengths[i]);
             }
 
+            longitudesArray[0] = "Position - latitude: ";
+            for(int i = 1; i < longitudes.length; i++){
+                longitudesArray[i + 1] = String.valueOf(longitudes[i]);
+            }
+
+            latitudesArray[0] = "Position - latitude: ";
+            for(int i = 1; i < latitudes.length; i++){
+                latitudesArray[i + 1] = String.valueOf(latitudes[i]);
+            }
+
             writer.writeNext(statisticsArray, false);
             writer.writeNext(pingResultsArray, false);
             writer.writeNext(signalStrengthsArray, false);
+            writer.writeNext(longitudesArray, false);
+            writer.writeNext(latitudesArray, false);
             writer.close();
 
         } catch (IOException e) {

@@ -170,7 +170,7 @@
             android:layout_weight="1"
             android:textColor="#dedede"
             android:textStyle="bold"
-            android:text="3"
+            android:text="10"
             android:gravity="right"
             android:maxLength="6" />
     </LinearLayout>

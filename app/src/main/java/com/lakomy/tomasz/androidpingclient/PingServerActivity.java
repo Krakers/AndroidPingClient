@@ -63,13 +63,15 @@ public class PingServerActivity extends FragmentActivity
     static public long signalStrength;
     static public String currentNetworkType;
     static public long timeBeforeRequest;
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    private GoogleApiClient mGoogleApiClient;
-    private double currentLatitude;
-    private double currentLongitude;
+    private GoogleMap googleMap;
+    private GoogleApiClient googleApiClient;
+    static public double currentLatitude;
+    static public double currentLongitude;
     RequestQueue queue;
     static public List<Long> pingTimes;
     static public List<Long> signalStrengths;
+    static public List<Float> latitudes;
+    static public List<Float> longitudes;
 
     static int packetSize;
     static public int numberOfPackets;
@@ -103,7 +105,7 @@ public class PingServerActivity extends FragmentActivity
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
+        googleApiClient.connect();
 
         pingButton = (Button)findViewById(R.id.ping_button);
         telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
@@ -186,6 +188,8 @@ public class PingServerActivity extends FragmentActivity
         minRequestTime = 0;
         pingTimes = new ArrayList<>();
         signalStrengths = new ArrayList<>();
+        longitudes = new ArrayList<>();
+        latitudes = new ArrayList<>();
         isInProgress = false;
     }
 
@@ -245,8 +249,12 @@ public class PingServerActivity extends FragmentActivity
 
     public static void updateRequestStatistics() throws IOException {
         lastKnownDeltaTime = System.currentTimeMillis() - timeBeforeRequest;
+
         pingTimes.add(lastKnownDeltaTime);
         signalStrengths.add(signalStrength);
+        longitudes.add((float)currentLongitude);
+        latitudes.add((float)currentLatitude);
+
         sumOfRequestTimes += lastKnownDeltaTime;
         numberOfRequests++;
         averageRequestTime = sumOfRequestTimes / numberOfRequests;
@@ -342,12 +350,28 @@ public class PingServerActivity extends FragmentActivity
         }
     }
 
+    public static float[] convertFloatListToArray(List<Float> list) {
+        float[] longitudesArray = new float[list.size()];
+        int i = 0;
+
+        for (Float f : list) {
+            longitudesArray[i++] = (f != null ? f : Float.NaN);
+        }
+
+        return longitudesArray;
+    }
+
     public static Bundle createShowResultsBundle() {
         Bundle bundle = new Bundle();
         long[] pingTimesArray = Longs.toArray(pingTimes);
         long[] signalStrengthsArray = Longs.toArray(signalStrengths);
+        float[] longitudesArray = convertFloatListToArray(longitudes);
+        float[] latitudesArray = convertFloatListToArray(latitudes);
+
         bundle.putLongArray("pingTimes", pingTimesArray);
         bundle.putLongArray("signalStrengths", signalStrengthsArray);
+        bundle.putFloatArray("longitudes", longitudesArray);
+        bundle.putFloatArray("latitudes", latitudesArray);
         bundle.putString("protocol", protocol);
         bundle.putInt("requestInterval", requestInterval);
         bundle.putInt("packetSize", packetSize);
@@ -384,7 +408,7 @@ public class PingServerActivity extends FragmentActivity
     public void onConnected(Bundle connectionHint) {
         setUpMapIfNeeded(); // Just in case
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
+                googleApiClient);
         if (mLastLocation != null) {
             currentLatitude = mLastLocation.getLatitude();
             currentLongitude = mLastLocation.getLongitude();
@@ -408,12 +432,11 @@ public class PingServerActivity extends FragmentActivity
         currentLatitude = latitude;
         currentLongitude = longitude;
         CameraUpdate center = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16);
-
-        mMap.moveCamera(center);
+        googleMap.moveCamera(center);
         if (!doNotMark) {
-            mMap.addCircle(new CircleOptions()
+            googleMap.addCircle(new CircleOptions()
                     .center(new LatLng(latitude, longitude))
-                    .radius(12)
+                    .radius(6)
                     .fillColor(getColorBasedOnDeltaTime())
                     .strokeWidth(0));
         }
@@ -448,7 +471,7 @@ public class PingServerActivity extends FragmentActivity
             }
         };
 
-        mMap.snapshot(callback);
+        googleMap.snapshot(callback);
     }
 
     @Override
@@ -469,7 +492,7 @@ public class PingServerActivity extends FragmentActivity
     }
 
     public synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -478,12 +501,12 @@ public class PingServerActivity extends FragmentActivity
 
     public void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
+        if (googleMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+            googleMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
             // Check if we were successful in obtaining the map.
-            if (mMap != null) {
+            if (googleMap != null) {
                 setUpMap();
             }
         }
