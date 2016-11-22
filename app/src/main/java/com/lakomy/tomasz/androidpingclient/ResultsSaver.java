@@ -101,10 +101,8 @@ public class ResultsSaver {
     void writeDataToFile() {
         assignCurrentValues();
         String[] statisticsArray = new String[9];
-        String[] pingResultsArray = new String[pingTimes.length + 1];
-        String[] signalStrengthsArray = new String[signalStrengths.length + 1];
-        String[] longitudesArray = new String[longitudes.length + 1];
-        String[] latitudesArray = new String[latitudes.length + 1];
+        String[] firstRow = new String[4];
+        String[] resultsArray;
 
         try {
             statisticsArray[0] = "Protocol: " + protocol;
@@ -116,32 +114,23 @@ public class ResultsSaver {
             statisticsArray[6] = " Minimum request time: " + minRequestTime;
             statisticsArray[7] = " Maximum request time: " + maxRequestTime;
             statisticsArray[8] = " Quartile deviation: " + quartileDeviation;
-
-            pingResultsArray[0] = "Response time results: ";
-            for(int i = 1; i < pingTimes.length; i++){
-                pingResultsArray[i + 1] = String.valueOf(pingTimes[i]);
-            }
-
-            signalStrengthsArray[0] = "Signal strengths results: ";
-            for(int i = 1; i < signalStrengths.length; i++){
-                signalStrengthsArray[i + 1] = String.valueOf(signalStrengths[i]);
-            }
-
-            longitudesArray[0] = "Position - latitude: ";
-            for(int i = 1; i < longitudes.length; i++){
-                longitudesArray[i + 1] = String.valueOf(longitudes[i]);
-            }
-
-            latitudesArray[0] = "Position - latitude: ";
-            for(int i = 1; i < latitudes.length; i++){
-                latitudesArray[i + 1] = String.valueOf(latitudes[i]);
-            }
-
             writer.writeNext(statisticsArray, false);
-            writer.writeNext(pingResultsArray, false);
-            writer.writeNext(signalStrengthsArray, false);
-            writer.writeNext(longitudesArray, false);
-            writer.writeNext(latitudesArray, false);
+
+            firstRow[0] = "Response time [ms]";
+            firstRow[1] = "Signal strength [dBm]";
+            firstRow[2] = "Longitude: ";
+            firstRow[3] = "Latitude: ";
+            writer.writeNext(firstRow, false);
+
+            for(int i = 0; i < pingTimes.length; i++) {
+                resultsArray = new String[4];
+                resultsArray[0] = String.valueOf(pingTimes[i]);
+                resultsArray[1] = String.valueOf(signalStrengths[i]);
+                resultsArray[2] = String.valueOf(longitudes[i]);
+                resultsArray[3] = String.valueOf(latitudes[i]);
+                writer.writeNext(resultsArray);
+            }
+
             writer.close();
 
         } catch (IOException e) {
