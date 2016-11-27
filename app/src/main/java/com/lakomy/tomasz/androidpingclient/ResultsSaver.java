@@ -17,6 +17,7 @@ public class ResultsSaver {
     int packetSize;
     int numberOfPackets;
     String protocol;
+    String currentNetworkType;
     int requestInterval;
     double averageRequestTime;
     double medianRequestTime;
@@ -48,7 +49,8 @@ public class ResultsSaver {
     }
 
     public void createFilePath() {
-        String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+        String baseDir =
+                android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
         String currentTime = simpleDateFormat.format(calendar.getTime());
         fileName = "AndroidPingData " + currentTime + ".csv";
 
@@ -69,6 +71,7 @@ public class ResultsSaver {
         return isSuccessful;
     }
 
+
     public boolean addCurrentResultsToFile() throws IOException {
         writer = new CSVWriter(new FileWriter(filePath, false), ',');
         writeDataToFile();
@@ -86,6 +89,7 @@ public class ResultsSaver {
         packetSize = extras.getInt("packet_size");
         numberOfPackets = extras.getInt("numberOfPackets");
         protocol = extras.getString("protocol");
+        currentNetworkType = extras.getString("currentNetworkType");
         requestInterval = extras.getInt("requestInterval");
         averageRequestTime = extras.getDouble("averageRequestTime");
         medianRequestTime = extras.getDouble("medianRequestTime");
@@ -98,39 +102,50 @@ public class ResultsSaver {
         latitudes = extras.getFloatArray("latitudes");
     }
 
+    String[] generateStatisticsArray() {
+        String[] statisticsArray = new String[10];
+        statisticsArray[0] = "Protocol: " + protocol;
+        statisticsArray[1] = " Network type: " + currentNetworkType;
+        statisticsArray[2] = " Packet size: " + packetSize + " bytes";
+        statisticsArray[3] = " Number of packets: " + numberOfPackets;
+        statisticsArray[4] = " Request interval: " + requestInterval + " ms";
+        statisticsArray[5] = " Average request time: " + averageRequestTime + " ms";
+        statisticsArray[6] = " Median request time: " + medianRequestTime  + " ms";
+        statisticsArray[7] = " Minimum request time: " + minRequestTime  + " ms";
+        statisticsArray[8] = " Maximum request time: " + maxRequestTime  + " ms";
+        statisticsArray[9] = " Quartile deviation: " + quartileDeviation  + " ms";
+
+        return statisticsArray;
+    }
+
+    String[] generateFirstRow() {
+        String[] firstRow = new String[4];
+        firstRow[0] = "Response time [ms]";
+        firstRow[1] = "Signal strength [dBm]";
+        firstRow[2] = "Longitude: ";
+        firstRow[3] = "Latitude: ";
+
+        return firstRow;
+    }
+
+    void writeResultsArray() {
+        String[] resultsArray;
+        for(int i = 0; i < pingTimes.length; i++) {
+            resultsArray = new String[4];
+            resultsArray[0] = String.valueOf(pingTimes[i]);
+            resultsArray[1] = String.valueOf(signalStrengths[i]);
+            resultsArray[2] = String.valueOf(longitudes[i]);
+            resultsArray[3] = String.valueOf(latitudes[i]);
+            writer.writeNext(resultsArray);
+        }
+    }
+
     void writeDataToFile() {
         assignCurrentValues();
-        String[] statisticsArray = new String[9];
-        String[] firstRow = new String[4];
-        String[] resultsArray;
-
         try {
-            statisticsArray[0] = "Protocol: " + protocol;
-            statisticsArray[1] = " Packet size: " + packetSize;
-            statisticsArray[2] = " Number of packets: " + numberOfPackets;
-            statisticsArray[3] = " Request interval: " + requestInterval;
-            statisticsArray[4] = " Average request time: " + averageRequestTime;
-            statisticsArray[5] = " Median request time: " + medianRequestTime;
-            statisticsArray[6] = " Minimum request time: " + minRequestTime;
-            statisticsArray[7] = " Maximum request time: " + maxRequestTime;
-            statisticsArray[8] = " Quartile deviation: " + quartileDeviation;
-            writer.writeNext(statisticsArray, false);
-
-            firstRow[0] = "Response time [ms]";
-            firstRow[1] = "Signal strength [dBm]";
-            firstRow[2] = "Longitude: ";
-            firstRow[3] = "Latitude: ";
-            writer.writeNext(firstRow, false);
-
-            for(int i = 0; i < pingTimes.length; i++) {
-                resultsArray = new String[4];
-                resultsArray[0] = String.valueOf(pingTimes[i]);
-                resultsArray[1] = String.valueOf(signalStrengths[i]);
-                resultsArray[2] = String.valueOf(longitudes[i]);
-                resultsArray[3] = String.valueOf(latitudes[i]);
-                writer.writeNext(resultsArray);
-            }
-
+            writer.writeNext(generateStatisticsArray(), false);
+            writer.writeNext(generateFirstRow(), false);
+            writeResultsArray();
             writer.close();
 
         } catch (IOException e) {
@@ -138,3 +153,5 @@ public class ResultsSaver {
         }
     }
 }
+
+

@@ -237,6 +237,10 @@ public class PingServerActivity extends FragmentActivity
         Median median = new Median();
         medianRequestTime = median.evaluate(resultsDoubleArray);
 
+        sumOfRequestTimes += lastKnownDeltaTime;
+        numberOfRequests++;
+        averageRequestTime = sumOfRequestTimes / numberOfRequests;
+
         maxRequestTime = Collections.max(results);
         minRequestTime = Collections.min(results);
         calculateQuartileDeviation(resultsDoubleArray);
@@ -255,12 +259,11 @@ public class PingServerActivity extends FragmentActivity
         longitudes.add((float)currentLongitude);
         latitudes.add((float)currentLatitude);
 
-        sumOfRequestTimes += lastKnownDeltaTime;
-        numberOfRequests++;
-        averageRequestTime = sumOfRequestTimes / numberOfRequests;
         calculateStatistics(pingTimes);
         appendCurrentResultsToFile();
     }
+
+
 
     public static void updateCurrentResults(TextView textView) {
         getCurrentNetworkData();
@@ -373,6 +376,7 @@ public class PingServerActivity extends FragmentActivity
         bundle.putFloatArray("longitudes", longitudesArray);
         bundle.putFloatArray("latitudes", latitudesArray);
         bundle.putString("protocol", protocol);
+        bundle.putString("currentNetworkType", currentNetworkType);
         bundle.putInt("requestInterval", requestInterval);
         bundle.putInt("packetSize", packetSize);
         bundle.putInt("numberOfPackets", numberOfPackets);
@@ -431,7 +435,8 @@ public class PingServerActivity extends FragmentActivity
     public void updateCamera(double latitude, double longitude, boolean doNotMark) {
         currentLatitude = latitude;
         currentLongitude = longitude;
-        CameraUpdate center = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16);
+        CameraUpdate center =
+                CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 16);
         googleMap.moveCamera(center);
         if (!doNotMark) {
             googleMap.addCircle(new CircleOptions()
@@ -477,18 +482,11 @@ public class PingServerActivity extends FragmentActivity
     @Override
     public void onConnectionSuspended(int cause) {
         Log.d("aping", "Google maps - onConnectionSuspended");
-        // The connection has been interrupted.
-        // Disable any UI components that depend on Google APIs
-        // until onConnected() is called.
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
         Log.d("aping", "Google maps - onConnectionFailed");
-        // This callback is important for handling errors that
-        // may occur while attempting to connect with Google.
-        //
-        // More about this in the 'Handle Connection Failures' section.
     }
 
     public synchronized void buildGoogleApiClient() {
@@ -513,27 +511,22 @@ public class PingServerActivity extends FragmentActivity
     }
 
     private void setUpMap() {
-        // Set up location listener:
-        // Acquire a reference to the system Location Manager
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager =
+                (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-        // Define a listener that responds to location updates
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
-                // Called when a new location is found by the network location provider.
                 if (isInProgress) {
                     updateCamera(location.getLatitude(), location.getLongitude(), false);
                 }
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {}
-
             public void onProviderEnabled(String provider) {}
-
             public void onProviderDisabled(String provider) {}
         };
-        String locationProvider = LocationManager.GPS_PROVIDER;
 
+        String locationProvider = LocationManager.GPS_PROVIDER;
         locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
     }
 

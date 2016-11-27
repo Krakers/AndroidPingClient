@@ -45,7 +45,8 @@ public class HttpRequestTask extends AsyncTask<Void, Void, Void> {
     }
 
     public CustomStringRequest getStringRequest() {
-        CustomStringRequest stringRequest = new CustomStringRequest(url, successHandler, errorHandler) {
+        CustomStringRequest stringRequest =
+                new CustomStringRequest(url, successHandler, errorHandler) {
             protected Map<String, String> getParams()
             {
                 String data = generator.generateRandomData(packetSize);

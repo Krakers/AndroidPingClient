@@ -37,13 +37,14 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         message = generator.generateRandomData(packetSize);
         message = message.trim();
 
-        senderPacket = new DatagramPacket(message.getBytes(), message.length(), ipAddress, dstPort);
+        senderPacket = new DatagramPacket(
+                message.getBytes(), message.length(), ipAddress, dstPort);
         datagramSocket.setBroadcast(true);
 
         // Store time before request:
         PingServerActivity.timeBeforeRequest = System.currentTimeMillis();
 
-        Log.d("aping", "Sending pingTimesEntries through UDP: " + message);
+
         datagramSocket.send(senderPacket);
     }
 
@@ -51,10 +52,8 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         receiveBuffer = new byte[packetSize];
         receiverPacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
 
-        // Receive the UDP-Packet
         datagramSocket.receive(receiverPacket);
         publishProgress();
-        Log.d("aping", "Received pingTimesEntries through UDP: " + new String(receiverPacket.getData()));
     }
 
     @Override
@@ -73,8 +72,6 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         try
         {
             while (!PingServerActivity.shouldCancelNextRequest()) {
-                Log.d("aping", "udp ip: " + ipAddress);
-                Log.d("aping", "udp port: " + dstPort);
                 sendData();
                 receiveData();
                 Thread.sleep(PingServerActivity.requestInterval);
@@ -94,3 +91,4 @@ class UdpSocketRequestTask extends AsyncTask<Void, Void, Void> {
         return null;
     }
 }
+
