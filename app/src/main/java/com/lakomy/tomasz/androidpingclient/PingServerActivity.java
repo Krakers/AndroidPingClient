@@ -451,26 +451,43 @@ public class PingServerActivity extends FragmentActivity
     {
         GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback()
         {
-
             @Override
             public void onSnapshotReady(Bitmap snapshot)
             {
-                try
-                {
+                try {
                     Calendar calendar = Calendar.getInstance();
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
                     String currentTime = simpleDateFormat.format(calendar.getTime());
                     String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
                     String filePath = baseDir + File.separator
+                            + "AndroidPingResults" + currentTime
+                            + ".png";
+                    String filePathMap = baseDir + File.separator
                             + "AndroidPingMap" + currentTime
                             + ".png";
-                    FileOutputStream outputStream = new FileOutputStream(filePath);
-                    snapshot.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+
+                    FileOutputStream mapOutputStream = new FileOutputStream(filePathMap);
+                    snapshot.compress(Bitmap.CompressFormat.JPEG, 90, mapOutputStream);
+                    mapOutputStream.flush();
+                    mapOutputStream.close();
+
+                    // create bitmap screen capture
+                    View v1 = getWindow().getDecorView().getRootView();
+                    v1.setDrawingCacheEnabled(true);
+                    Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+                    v1.setDrawingCacheEnabled(false);
+
+                    File imageFile = new File(filePath);
+
+                    FileOutputStream outputStream = new FileOutputStream(imageFile);
+                    int quality = 100;
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
                     outputStream.flush();
                     outputStream.close();
-                    displayAlert("Screenshot saved to " + filePath);
-                } catch (IOException e)
-                {
+                    displayAlert("Screenshot and map saved to " + filePath + " & " + filePathMap);
+
+                } catch (Throwable e) {
+                    // Several error may come out with file handling or OOM
                     e.printStackTrace();
                 }
             }

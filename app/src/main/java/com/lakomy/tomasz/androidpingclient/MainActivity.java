@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
 
         // Default pingTimesEntries, remove it later
         if (ipAddress.isEmpty() || port == 0) {
-            ipAddress = "192.168.0.19";
+            ipAddress = "94.254.145.142";
             port = 8000;
         }
 
