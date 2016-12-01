@@ -33,7 +33,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ipAddress = ((EditText) findViewById(R.id.ip_address)).getText().toString();
         intervalSpinner = (Spinner) findViewById(R.id.interval_spinner);
         protocolSpinner = (Spinner) findViewById(R.id.protocol_spinner);
     }
@@ -106,6 +105,11 @@ public class MainActivity extends Activity {
     public boolean verifyInputData() {
         boolean isInputDataCorrect = true;
 
+        if (ipAddress.isEmpty() || port <= 0) {
+            displayWrongInputAlert("You need to provide proper IP address and port");
+            isInputDataCorrect = false;
+        }
+
         if (packetSize <= 0) {
             displayWrongInputAlert("Packet size must be greater than 0");
             isInputDataCorrect = false;
@@ -137,6 +141,7 @@ public class MainActivity extends Activity {
     /** Called when the user clicks the Send button **/
     public void sendMessage(View view) {
         Intent intent = new Intent(this, PingServerActivity.class);
+        ipAddress = ((EditText) findViewById(R.id.ip_address)).getText().toString();
         packetSize = getDataFromEditTextView(R.id.packet_size);
         numberOfPackets = getDataFromEditTextView(R.id.number_of_packets);
         intervalUnit = intervalSpinner.getSelectedItem().toString();
@@ -150,14 +155,14 @@ public class MainActivity extends Activity {
         setRequestInterval();
         verifyInputData();
 
-        // Default pingTimesEntries, remove it later
-        if (ipAddress.isEmpty() || port == 0) {
-            ipAddress = "94.254.145.142";
-            port = 8000;
-        }
-
-//        url = "http://" + ipAddress + ":" + port;
-        url = "https://thawing-castle-69711.herokuapp.com/";
+//        // Default pingTimesEntries, remove it later
+//        if (ipAddress.isEmpty() || port == 0) {
+//            ipAddress = "94.254.145.142";
+//            port = 8000;
+//        }
+//
+        url = "http://" + ipAddress + ":" + port;
+//        url = "https://thawing-castle-69711.herokuapp.com/";
 
 
         if (verifyInputData()) {
