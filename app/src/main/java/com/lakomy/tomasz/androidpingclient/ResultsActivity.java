@@ -11,19 +11,49 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.YAxisValueFormatter;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.opencsv.CSVWriter;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.io.File;
 import java.util.Calendar;
 
+class yAxisValueFormatterLeft implements YAxisValueFormatter {
 
+    private DecimalFormat mFormat;
+
+    public yAxisValueFormatterLeft() {
+        mFormat = new DecimalFormat("###,###,##0"); // use one decimal
+    }
+
+    @Override
+    public String getFormattedValue(float value, YAxis yAxis) {
+        return mFormat.format(value) + " ms"; // e.g. append a dollar-sign
+    }
+}
+
+class yAxisValueFormatterRight implements YAxisValueFormatter {
+
+    private DecimalFormat mFormat;
+
+    public yAxisValueFormatterRight() {
+        mFormat = new DecimalFormat("###,###,##0"); // use one decimal
+    }
+
+    @Override
+    public String getFormattedValue(float value, YAxis yAxis) {
+        return mFormat.format(value) + " dBm"; // e.g. append a dollar-sign
+    }
+}
 
 public class ResultsActivity extends Activity {
     LineChart chart;
@@ -62,17 +92,25 @@ public class ResultsActivity extends Activity {
             signalStrengthEntries.add(entry);
         }
 
-        LineDataSet pingTimesDataSet = new LineDataSet(pingTimesEntries, "Response time");
-        LineDataSet signalStrengthsDataSet = new LineDataSet(signalStrengthEntries, "Signal strength");
+        LineDataSet pingTimesDataSet = new LineDataSet(pingTimesEntries, "Response time [ms]");
+        LineDataSet signalStrengthsDataSet = new LineDataSet(signalStrengthEntries, "Signal strength [dBm]");
         signalStrengthsDataSet.setColor(Color.RED);
         signalStrengthsDataSet.setCircleColor(Color.RED);
         ArrayList<LineDataSet> dataSets = new ArrayList<>();
         dataSets.add(pingTimesDataSet);
         dataSets.add(signalStrengthsDataSet);
 
+        chart.animateXY(1500, 1500);
+        chart.setDescription("");
+        YAxis axisLeft = chart.getAxisLeft();
+        axisLeft.setValueFormatter(new yAxisValueFormatterLeft());
+        YAxis axisRight = chart.getAxisRight();
+        axisRight.setValueFormatter(new yAxisValueFormatterRight());
+
         LineData dataLineData = new LineData(xVals, dataSets);
 
         chart.setData(dataLineData);
+
     }
 
     public void displaySaveResultAlert(String message) {

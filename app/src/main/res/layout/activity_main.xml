@@ -71,7 +71,7 @@
             android:id="@+id/packet_size"
             android:layout_weight="1"
             android:textColor="#dedede"
-            android:text="25"
+            android:text="128"
             android:gravity="right"
             android:textStyle="bold"
             android:maxLength="5" />

@@ -105,10 +105,10 @@ public class MainActivity extends Activity {
     public boolean verifyInputData() {
         boolean isInputDataCorrect = true;
 
-        if (ipAddress.isEmpty() || port <= 0) {
-            displayWrongInputAlert("You need to provide proper IP address and port");
-            isInputDataCorrect = false;
-        }
+//        if (ipAddress.isEmpty() || port <= 0) {
+//            displayWrongInputAlert("You need to provide proper IP address and port");
+//            isInputDataCorrect = false;
+//        }
 
         if (packetSize <= 0) {
             displayWrongInputAlert("Packet size must be greater than 0");
@@ -161,8 +161,8 @@ public class MainActivity extends Activity {
 //            port = 8000;
 //        }
 //
-        url = "http://" + ipAddress + ":" + port;
-//        url = "https://thawing-castle-69711.herokuapp.com/";
+//        url = "http://" + ipAddress + ":" + port;
+        url = "https://thawing-castle-69711.herokuapp.com/";
 
 
         if (verifyInputData()) {
